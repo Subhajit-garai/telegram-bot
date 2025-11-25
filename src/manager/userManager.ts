@@ -37,7 +37,6 @@ class UserManager {
   private static instance: UserManager;
   network: Network;
   bot: TelegramBot;
-
   refreshtime: number = parseInt(process.env.REFRESH_TIME!) ?? 60; // in minutes
 
   private constructor() {

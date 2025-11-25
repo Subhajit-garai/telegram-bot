@@ -1,11 +1,8 @@
-import axios, { AxiosError } from "axios";
-import dotenv from "dotenv";
+import axios from "axios";
 import { Middleware, TelegramUpdate } from "../types";
 import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth";
-import UserManager from "../manager/userManager";
 import { Conversation } from "../manager/conversationSession";
 import { conv } from "..";
-dotenv.config();
 
 class TelegramBot {
   private token: string;
@@ -37,6 +34,7 @@ class TelegramBot {
     // Initialize webhook asynchronously
     this.init();
   }
+
 
   // Get the singleton instance
   public static getInstance(): TelegramBot {
@@ -392,7 +390,6 @@ class TelegramBot {
         console.log("Webhook is already set correctly.");
         return;
       }
-
       console.log("Updating webhook to:", url);
       const response = await axios.post(`${this.apiUrl}/setWebhook`, { url });
       console.log("Webhook set:", response.data);

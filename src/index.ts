@@ -1,15 +1,11 @@
 import express from "express";
-import dotenv from "dotenv";
+import "dotenv/config";
 import TelegramBot from "./utils/Telegrambot";
 import QuizManager from "./manager/quizManager";
 import UserManager from "./manager/userManager";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth";
 import { Conversation } from "./manager/conversationSession";
-
 import "./conversation/feedback"
-
-
-dotenv.config();
 
 const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
