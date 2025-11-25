@@ -1,4 +1,4 @@
-name: Worker Deploy
+name: telegram bot Deploy
 
 on:
   push:
@@ -59,7 +59,7 @@ jobs:
 
   deploy-bot:
     needs: 
-      - build-worker
+      - build-Bot
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -71,7 +71,7 @@ jobs:
           envs: BOT_IMAGE
           script: |
           
-            IMAGE=${BOT_IMAGE}:${{ needs.build-worker.outputs.imagetag }}
+            IMAGE=${BOT_IMAGE}:${{ needs.build-Bot.outputs.imagetag }}
             sudo docker pull $IMAGE
             sudo docker --signal=SIGINT stop exam_bot || true
             sudo docker rm exam_bot || true
