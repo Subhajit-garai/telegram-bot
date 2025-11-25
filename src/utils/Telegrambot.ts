@@ -385,7 +385,13 @@ class TelegramBot {
   // Set webhook for Telegram
   private async setWebhook(url: string) {
     try {
-      const { data } = await axios.get(`${this.apiUrl}/getWebhookInfo`);
+      const res = await axios.get(`${this.apiUrl}/getWebhookInfo`);
+      if(res.status !== 200) {
+        console.error("Failed to get webhook info:", res);
+        console.error("requested url :", `${this.apiUrl}/getWebhookInfo`);
+        return;
+      }
+      const data = res.data;
       if (data.result && data.result.url === url) {
         console.log("Webhook is already set correctly.");
         return;
