@@ -73,7 +73,7 @@ jobs:
           
             IMAGE=${BOT_IMAGE}:${{ needs.build-Bot.outputs.imagetag }}
             sudo docker pull $IMAGE
-            sudo docker --signal=SIGINT stop exam_bot || true
+            sudo docker stop exam_bot || true
             sudo docker rm exam_bot || true
 
             sudo docker run -d \
