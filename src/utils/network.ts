@@ -30,7 +30,6 @@ export class Network {
   getAccessToken(): string {
     return this.botauthtoken;
   }
-
   async auth() {
     try {
       let url = `${this.be_url}/api/v1/bot/auth`;
@@ -41,7 +40,6 @@ export class Network {
       console.log("response", request.status);
     } catch (error) {}
   }
-
   async SendNotificationToSurver(type = "", data: any =null) {
     let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
      let header = {
@@ -54,7 +52,6 @@ export class Network {
 
       }
   }
-
   async login(retries = 10, delayMs = 2000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {

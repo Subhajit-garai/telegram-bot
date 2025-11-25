@@ -41,9 +41,6 @@ bot.on("/feedback", async (update) => {
   conv.dispatch("feedback",update)  
 });
 
-
-
-
 bot.on("/sendchatid", isAdmin, async (update) => {
   let userid = update.message.from.id;
   let chatId = update.message.chat.id;
@@ -80,7 +77,6 @@ bot.on("!Error", isGroupValid, isAdmin, async (update) => {
 bot.on("!Check", isGroupValid, isAdmin, async (update) => {});
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
-  
   await quiz.getquestions(update);
 });
 
