@@ -77,10 +77,10 @@ jobs:
             sudo docker rm exam_bot || true
 
             sudo docker run -d \
-            --name bot \
+            --name exam_bot \
             --env-file /home/ubuntu/deploy/.tele_bot.env \
             --network ${{ secrets.DOCKER_NETWORK}} \
-            -p $PORT:3000 \
+            -p 4444:4444 \
             $IMAGE
 
             sudo docker system prune -f
