@@ -1,6 +1,5 @@
 import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
-import { quiz } from "..";
+import dayjs from "dayjs";
 import { Network } from "../utils/network";
 import TelegramBot from "../utils/Telegrambot";
 
@@ -39,7 +38,7 @@ class UserManager {
   network: Network;
   bot: TelegramBot;
 
-  refreshtime: number = parseInt(process.env.REFRESH_TIME!) ?? 1; // in minutes
+  refreshtime: number = parseInt(process.env.REFRESH_TIME!) ?? 60; // in minutes
 
   private constructor() {
     this.init();
@@ -133,7 +132,6 @@ class UserManager {
 
     return this.validChatIds.hasOwnProperty(chat_id.toString());
   }
-  
   async getAdmins() {
     let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=Admin`;
     let header = {

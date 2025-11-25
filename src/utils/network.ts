@@ -52,7 +52,7 @@ export class Network {
 
       }
   }
-  async login(retries = 10, delayMs = 2000) {
+  async login(retries = 10, delayMs = 3000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         console.log("login porcess started .... ", `Attempt ${attempt}`);

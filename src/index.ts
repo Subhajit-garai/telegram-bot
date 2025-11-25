@@ -4,7 +4,6 @@ import TelegramBot from "./utils/Telegrambot";
 import QuizManager from "./manager/quizManager";
 import UserManager from "./manager/userManager";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth";
-import { TelegramUpdate } from "./types";
 import { Conversation } from "./manager/conversationSession";
 
 import "./conversation/feedback"
@@ -12,7 +11,7 @@ import "./conversation/feedback"
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5005;
+const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
 
 const app = express();
