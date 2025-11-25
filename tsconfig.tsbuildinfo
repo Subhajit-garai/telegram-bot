@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/conversation/feedback.ts","./src/manager/conversationsession.ts","./src/manager/eventmanager.ts","./src/manager/quizmanager.ts","./src/manager/usermanager.ts","./src/middlewere/userauth.ts","./src/types/index.ts","./src/types/quiztypes.ts","./src/utils/telegrambot.ts","./src/utils/network.ts"],"version":"5.8.3"}

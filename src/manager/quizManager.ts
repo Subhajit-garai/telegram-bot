@@ -1,0 +1,274 @@
+import axios from "axios";
+import TelegramBot from "../utils/Telegrambot";
+import { TelegramUpdate } from "../types";
+
+import {
+  quiz_info_type,
+  quiz_question_type,
+  quiz_user_answer_type,
+  quizConfig_data_type,
+  quizConfig_type,
+} from "../types/quizTypes";
+import { randomInt, randomUUID } from "crypto";
+import { Network } from "../utils/network";
+
+class QuizManager {
+  private userAnswers: Map<string, quiz_user_answer_type>;
+  private quizInfo: Map<string, quiz_info_type>;
+
+  bot: TelegramBot;
+  network: Network;
+
+  constructor() {
+    this.quizInfo = new Map();
+    this.userAnswers = new Map();
+    this.bot = TelegramBot.getInstance();
+    this.network = Network.getInstance();
+  }
+
+  clearcache() {
+    console.log("clearing quiz manager cache ....");
+    this.userAnswers.clear();
+    this.quizInfo.clear();
+  }
+
+  reportQuestionError() {}
+  CheckQuestion() {}
+
+  async getquestions(
+    update: TelegramUpdate,
+    type: "quiz"  = "quiz"
+  ) {
+    try {
+      let url = this.network.getUrl(`/api/v1/bot/getquestionsset`);
+      let chatid = update.message.chat.id;
+      let chat_type = update.message.chat.type;
+      let userid = update.message.from.id;
+      let header = {
+        Authorization: this.network.getAccessToken(),
+      };
+      let data = {
+        type: type,
+        chat_type: chat_type,
+        user_id: userid,
+        chat_id: chatid,
+        platform: "TELEGRAM",
+      };
+
+      let request = await axios.post(url, data, { headers: header });      
+      if (request.status === 200) {
+        return request;
+      }
+    } catch (error: any) {
+      console.log("error in getquestions", error.response.data.message);
+    }
+  }
+
+  async quiz(data: quizConfig_data_type) {
+    let { chatid, thread_id } = data.config;    
+    // count down
+    this.bot.sendMessage(chatid, "Are you ready to quiz?", "TEXT", thread_id);
+    this.bot
+      .sendMessage(chatid, "Quiz will start in 3 seconds...", "TEXT", thread_id)
+      .then((mesg) =>
+        this.countdown(chatid, mesg.result.message_id, data, this.sendQuestion)
+      );
+  }
+
+  countdown = async (
+    chatid: number,
+    message_id: number,
+    data: any,
+    next: (data: any) => any
+  ) => {
+    const countdownSteps = ["⏳ 3", "⏳ 2", "⏳ 1", "🎉 Let's go!"];
+
+    countdownSteps.forEach((text, i) => {
+      setTimeout(() => {
+        this.bot.editMessageText(chatid, message_id, text);
+        // Only send question after final countdown step
+        if (i === countdownSteps.length - 1) {
+          setTimeout(() => {
+            next(data);
+          }, 500); // 0.5 sec buffer
+        }
+      }, i * 1000); // each step every 1 second
+    });
+  };
+
+  handle_poll_answer = async (update: TelegramUpdate) => {
+    console.log("collecting ans ....");
+
+    let answer = update?.poll_answer;
+    let poll_id = answer.poll_id;
+    let selected_option = answer.option_ids[0];
+    let data = this.quizInfo.get(poll_id);
+    if (!data) {
+      console.log("No quiz data found for poll ID:", poll_id);
+      return;
+    }
+    const userId = answer.user.id;
+    const quizId = data.quiz_id;
+    const correct_option_id = data.correct_option_id;
+
+    // Always get or create the userMap
+    const userMap = this.userAnswers.get(quizId) || {};
+    const user = userMap[userId];
+
+    // Check answer correctness
+    if (correct_option_id === selected_option) {
+      if (user) {
+        user.score += 1;
+        user.attemp += 1;
+      } else {
+        userMap[userId] = {
+          first_name: answer.user.first_name ?? "No name",
+          username: answer.user.username ?? "N/A",
+          score: 1,
+          attemp: 1,
+          notattemp: 0,
+          wrong: 0,
+        };
+      }
+    } else {
+      if (user) {
+        user.wrong += 1;
+      } else {
+        userMap[userId] = {
+          first_name: answer.user.first_name,
+          username: answer.user.username ?? "N/A",
+          score: 0,
+          attemp: 0,
+          notattemp: 0,
+          wrong: 1,
+        };
+      }
+    }
+
+    // Update the userMap in the main map
+    this.userAnswers.set(quizId, userMap);
+  };
+
+  // in dev
+  codeFormatter = async (code: string) => {
+    let formatted: string = "";
+    function escapeHTML(text: string) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    let escapedStr = escapeHTML(code);
+    formatted = `<pre><code>${escapedStr}</code></pre>`;
+    return formatted;
+  };
+
+  sendQuestion = async (data: quizConfig_data_type) => {
+    let {
+      chatid,
+      thread_id,
+      userid,
+      topics,
+      total_questions,
+      quizOpenFor,
+      nextQuestionTime,
+    } = data.config;
+
+    console.log("question data is --->", data.questions);
+
+    let quiz_id = randomInt(0, 1000000).toString();
+
+    data.questions.map(async (question, i) => {
+      let { title, options, topic, ans, explanation, id, extra, formate } =
+        question;
+      let ansid = parseInt(ans[0]) - 1;
+      setTimeout(
+        async () => {
+          switch (formate) {
+            case "Code":
+              extra
+                ? this.bot.sendMessage(
+                    chatid,
+                    await this.codeFormatter(extra[formate]),
+                    "HTML",
+                    thread_id
+                    //await this.codeFormatter(extra[formate], topic)
+                  )
+                : null;
+              break;
+            case "Image":
+              break;
+            default:
+              break;
+          }
+
+          let message = await this.bot.sendPoll(
+            `${i + 1}`,
+            chatid,
+            (title = `${i + 1}) ${title}`),
+            options,
+            ansid,
+            (explanation =
+              explanation.length > 200
+                ? explanation.slice(0, 197) + "..."
+                : explanation),
+            false,
+            quizOpenFor,
+            thread_id
+          );
+          if (message) {
+            let data: quiz_info_type = {
+              quiz_id: quiz_id,
+              chat_id: message.result.chat.id,
+              message_id: message.result.message_id,
+              correct_option_id: ansid,
+              poll_id: message.result.poll.id,
+              user_id: userid,
+            };
+            this.quizInfo.set(message.result.poll.id, data); // key is  poll id
+
+            // console.log("quiz info", this.quizInfo);
+          }
+        },
+        i * nextQuestionTime * 1000
+      );
+    });
+
+    setTimeout(
+      () => {
+        this.showleaderBoard(quiz_id, chatid, thread_id);
+      },
+      total_questions * nextQuestionTime * 1000 + 2 * quizOpenFor * 1000
+    );
+  };
+
+  showleaderBoard(
+    quiz_id: string,
+    chat_id: number,
+    thread_id: number | undefined = undefined
+  ) {
+    let all_user_data = this.userAnswers.get(quiz_id);
+    console.log("quiz id is (in showleaderboard) --->", quiz_id);
+
+    if (!all_user_data) {
+      console.log(
+        "No quiz data found for quiz ID (in showleaderboard):",
+        quiz_id
+      );
+      return;
+    }
+    let sorted_users = Object.values(all_user_data).sort(
+      (a, b) => b.score - a.score
+    );
+    let leaderboard_text = "🏆 Quiz Leaderboard 🏆\n\n";
+    sorted_users.forEach((user, index) => {
+      leaderboard_text += `${index + 1}. ${
+        user.first_name ? user.first_name : user.username
+      }  - Score: ${user.score}\n`;
+    });
+    this.bot.sendMessage(chat_id, leaderboard_text, "TEXT", thread_id);
+  }
+}
+
+export default QuizManager;
