@@ -26,7 +26,7 @@ class TelegramBot {
     this.token = process.env.BOT_TOKEN!;
     this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN!;
     this.AI_MENTOR_BOT_TOKEN = process.env.AI_MENTOR_BOT_TOKEN!;
-    this.WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
+    this.WEBHOOK_URL = `${process.env.WEBHOOK_URL!}/webhook`;
     this.apiUrl = `https://api.telegram.org/bot${this.token}`;
     this.commands = new Map();
     this.correctAnswers = new Map();
