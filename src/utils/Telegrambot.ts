@@ -400,7 +400,7 @@ class TelegramBot {
       const response = await axios.post(`${this.apiUrl}/setWebhook`, { url });
       console.log("Webhook set:", response.data);
     } catch (error: any) {
-      console.error("Error setting webhook:", error.response?.data);
+      console.error("Error setting webhook:", error);
     }
   }
 
