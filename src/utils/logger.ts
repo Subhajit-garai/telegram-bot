@@ -5,4 +5,5 @@ export const logger = {
   error: (...msg: any[]) => console.error("❌", ...msg),
 };
 
-export const loggeDate = () => Date.now();
+export const loggeDate = () =>
+  logger.info(`timestamp: ${new Date().toISOString()}`);
