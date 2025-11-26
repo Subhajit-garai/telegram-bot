@@ -6,6 +6,7 @@ import TelegramBot from "../utils/Telegrambot";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { loggeDate, logger } from "../utils/logger";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -37,7 +38,7 @@ class UserManager {
   private static instance: UserManager;
   network: Network;
   bot: TelegramBot;
-  refreshtime: number = parseInt(process.env.REFRESH_TIME!) ?? 60; // in minutes
+  refreshtime: number = parseInt(process.env.REFRESH_TIME?.trim()!) ?? 60; // in minutes
 
   private constructor() {
     this.init();
@@ -53,16 +54,16 @@ class UserManager {
   }
   private refreshUserdataList() {
     console.log("Refreshing user list every", this.refreshtime, "minutes");
-    
+
     setInterval(async () => {
-      console.log("Refreshing user list......");
+      logger.info("Refreshing user list......");
+      loggeDate();
       await this.getUserInfomationfromServer();
       await this.getValidChatidsInfoFromServer();
-    }, this.refreshtime*60000);
+    }, this.refreshtime * 60000);
   }
 
-
-   clearcache() {
+  clearcache() {
     console.log("clearing user manager cache ....");
     this.users = {};
     this.admin = [];
@@ -128,7 +129,6 @@ class UserManager {
   }
 
   isValidChatId(chat_id: number): boolean {
-
     return this.validChatIds.hasOwnProperty(chat_id.toString());
   }
   async getAdmins() {

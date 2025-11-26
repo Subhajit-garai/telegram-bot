@@ -23,11 +23,11 @@ class TelegramBot {
   Conversation: Conversation;
 
   private constructor() {
-    this.token = process.env.BOT_TOKEN!;
-    this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN!;
-    this.AI_MENTOR_BOT_TOKEN = process.env.AI_MENTOR_BOT_TOKEN!;
-    this.WEBHOOK_URL = `${process.env.WEBHOOK_URL!}/webhook`;
-    this.apiUrl = `https://api.telegram.org/bot${this.token}`;
+    this.token = process.env.BOT_TOKEN?.trim()!;
+    this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN?.trim()!;
+    this.AI_MENTOR_BOT_TOKEN = process.env.AI_MENTOR_BOT_TOKEN?.trim()!;
+    this.WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
+    this.apiUrl =`https://api.telegram.org/bot${this.token}`;
     this.commands = new Map();
     this.correctAnswers = new Map();
     this.Conversation = Conversation.getInstance();
@@ -392,7 +392,7 @@ class TelegramBot {
         return;
       }
       const data = res.data;
-      if (data.result && data.result.url === url) {
+      if (data.result && data.result.url === url) {  // can be here
         console.log("Webhook is already set correctly.");
         return;
       }
@@ -400,7 +400,7 @@ class TelegramBot {
       const response = await axios.post(`${this.apiUrl}/setWebhook`, { url });
       console.log("Webhook set:", response.data);
     } catch (error: any) {
-      console.error("Error setting webhook:", error);
+      console.error("Error setting webhook:", error.response?.data || error);
     }
   }
 
