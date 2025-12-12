@@ -8,7 +8,8 @@ export const isGroupValid: Middleware = async (
 ) => {
   let ChatType = update.message.chat.type;
   let chatId = update.message.chat.id;
-
+  
+  
   switch (ChatType) {
     case "group":
       {

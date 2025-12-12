@@ -413,7 +413,8 @@ class TelegramBot {
         return responce.data.result;
       }
     } catch (error: any) {
-      console.log(error?.response?.data?.description);
+      
+      console.error( "error -->" ,error?.response?.data?.description);
     }
   }
   // ban and unban`

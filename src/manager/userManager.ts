@@ -31,10 +31,26 @@ export type validChatids_type = {
 };
 
 type primeStatus = "None" | "Bronze" | "Silver" | "Gold";
+type SocialPlatform =
+  | "email"
+  | "telegram"
+  | "whatsApp"
+  | "linkedIn"
+  | "gitHub"
+  | "twitter"
+  | "instagram"
+  | "facebook"
+  | "website";
+
 type user_data_type = {
   social: {
-    telegram: string | null;
-  } | null;
+    id: string;
+    platform: SocialPlatform;
+    updatedAt: Date;
+    userId: string;
+    link: string;
+    isVerified: boolean;
+  }[];
   prime: {
     status: primeStatus;
     expiry: Date;
@@ -139,8 +155,8 @@ class UserManager {
     return this.admin.includes(userid);
   }
 
-  isValidChatId(chat_id: number): boolean {
-    return this.validChatIds.hasOwnProperty(chat_id.toString());
+  isValidChatId(chat_id: number): boolean {    
+    return this.validChatIds.hasOwnProperty(String(chat_id));
   }
   async getAdmins() {
     console.log("getting admin user data ");
@@ -148,13 +164,15 @@ class UserManager {
     if (!responce) throw Error("chat ids not found");
 
     let data: user_data_type = responce.data;
-
-    if (Array.isArray(data)) {
-      console.log("adding user to local db .....");
+    
+    if (Array.isArray(data) && data.length > 0) {
+      logger.info("adding admin user to local db .....");
       data.map((user) => {
-        if (!user.social?.telegram)
-          throw Error("telegram data not found or not updated"); //send notification to user to add telegram id
-        this.admin.push(parseInt(user.social.telegram));
+        if (user.social.length < 1 ||  user.social[0].platform !== "telegram"){
+          logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
+          return
+        }
+        this.admin.push(parseInt(user.social[0].link));
       });
     }
   }
@@ -165,17 +183,19 @@ class UserManager {
 
     let data: user_data_type = responce.data;
 
-    if (Array.isArray(data)) {
-      console.log("adding user to local db .....");
+
+
+    if (Array.isArray(data) && data.length > 0) {
+      logger.info("adding user to local db .....");
 
       data.map((user) => {
-        if (user.social?.telegram && user.prime) {
+        if ( user.social.length > 0 && (user.social[0].platform === "telegram" && user.prime)) {
           let data: User_type = {
-            id: user.social?.telegram,
+            id: user.social[0].link,
             expiry: user.prime.expiry,
             primeStaus: user.prime.status,
           };
-          this.addUser(user.social.telegram, data);
+          this.addUser(user.social[0].link, data);
         }
       });
     }

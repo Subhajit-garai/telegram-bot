@@ -6,6 +6,7 @@ import UserManager from "./manager/userManager";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth";
 import { Conversation } from "./manager/conversationSession";
 import "./conversation/feedback"
+import { logger } from "./utils/logger";
 
 const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
@@ -72,6 +73,7 @@ bot.on("!Error", isGroupValid, isAdmin, async (update) => {
 bot.on("!Check", isGroupValid, isAdmin, async (update) => {});
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
+  logger.success("starting new quiz ...")
   await quiz.getquestions(update);
 });
 
