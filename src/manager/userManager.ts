@@ -30,6 +30,17 @@ export type validChatids_type = {
   [key: string]: validChatid_type;
 };
 
+type primeStatus = "None" | "Bronze" | "Silver" | "Gold";
+type user_data_type = {
+  social: {
+    telegram: string | null;
+  } | null;
+  prime: {
+    status: primeStatus;
+    expiry: Date;
+  } | null;
+}[];
+
 class UserManager {
   private users: Users_type = {};
   private admin: number[] = [];
@@ -132,59 +143,41 @@ class UserManager {
     return this.validChatIds.hasOwnProperty(chat_id.toString());
   }
   async getAdmins() {
-    let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=Admin`;
-    let header = {
-      Authorization: this.network.getAccessToken(),
-    };
-
     console.log("getting admin user data ");
+    let responce = await this.network.getUserInfomation("Admin");
+    if (!responce) throw Error("chat ids not found");
 
-    type primeStatus = "None" | "Bronze" | "Silver" | "Gold";
+    let data: user_data_type = responce.data;
 
-    type responce_type = {
-      social: {
-        telegram: string | null;
-      } | null;
-      prime: {
-        status: primeStatus;
-        expiry: Date;
-      } | null;
-    }[];
-    
-
-    let responce = await axios.get(url, { headers: header });
-    let data: responce_type = responce.data.data;
-
-    if (responce.status) {
-      if (Array.isArray(data)) {
-        console.log("adding user to local db .....");
-        data.map((user) => {
-          if (!user.social?.telegram)
-            throw Error("telegram data not found or not updated"); //send notification to user to add telegram id
-
-          this.admin.push(parseInt(user.social.telegram));
-        });
-      }
+    if (Array.isArray(data)) {
+      console.log("adding user to local db .....");
+      data.map((user) => {
+        if (!user.social?.telegram)
+          throw Error("telegram data not found or not updated"); //send notification to user to add telegram id
+        this.admin.push(parseInt(user.social.telegram));
+      });
     }
   }
 
   private async getUserInfomationfromServer() {
-    let data = await this.network.getUserInfomation();
-    if (!data) throw Error("chat ids not found");
+    let responce = await this.network.getUserInfomation("User");
+    if (!responce) throw Error("chat ids not found");
 
-    if (data) {
-      if (Array.isArray(data.data)) {
-        console.log("adding user to local db .....");
+    let data: user_data_type = responce.data;
 
-        data.data.map((user) => {
+    if (Array.isArray(data)) {
+      console.log("adding user to local db .....");
+
+      data.map((user) => {
+        if (user.social?.telegram && user.prime) {
           let data: User_type = {
-            id: user.telegram.telegramid,
+            id: user.social?.telegram,
             expiry: user.prime.expiry,
             primeStaus: user.prime.status,
           };
-          this.addUser(user.telegram.telegramid, data);
-        });
-      }
+          this.addUser(user.social.telegram, data);
+        }
+      });
     }
 
     return true;

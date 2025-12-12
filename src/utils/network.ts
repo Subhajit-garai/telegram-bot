@@ -146,12 +146,12 @@ export class Network {
     }
     return null;
   }
-  async getUserInfomation(): Promise<{
+  async getUserInfomation(role:"User"|"Admin"): Promise<{
     success: boolean;
     message: string;
     data: any;
   }|null> {
-   let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=User`;
+   let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=${role}`;
     let header = {
       Authorization: this.botauthtoken,
     };
