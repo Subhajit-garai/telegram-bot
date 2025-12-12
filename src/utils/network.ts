@@ -40,17 +40,16 @@ export class Network {
       console.log("response", request.status);
     } catch (error) {}
   }
-  async SendNotificationToSurver(type = "", data: any =null) {
+  async SendNotificationToSurver(type = "", data: any = null) {
     let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
-     let header = {
-        Authorization: this.botauthtoken,
-      };
-      let request = await axios.post(url,data, { headers: header });
-      if(request.status == 200){
-        console.log("response", request.status);
-        console.log("notification sended ..");
-
-      }
+    let header = {
+      Authorization: this.botauthtoken,
+    };
+    let request = await axios.post(url, data, { headers: header });
+    if (request.status == 200) {
+      console.log("response", request.status);
+      console.log("notification sended ..");
+    }
   }
   async login(retries = 10, delayMs = 3000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -69,7 +68,7 @@ export class Network {
           console.log("Login successful");
           if (request?.data?.success) {
             console.log("Setting bot token....");
-            this.botauthtoken = request?.data?.data;            
+            this.botauthtoken = request?.data?.data;
             this.islogin = true;
             console.log("Bot token set successfully");
             return true;
@@ -129,6 +128,43 @@ export class Network {
     }
     return false;
   }
+
+  async getvalidChatids(): Promise<{
+    success: boolean;
+    message: string;
+    data: any;
+  }|null> {
+    let url = `${process.env.BE_URL}/api/v1/bot/validchatids`;
+    let header = {
+      Authorization: this.botauthtoken,
+    };
+
+    let responce = await axios.get(url, { headers: header });
+
+    if (responce.data.success) {
+      return responce.data;
+    }
+    return null;
+  }
+  async getUserInfomation(): Promise<{
+    success: boolean;
+    message: string;
+    data: any;
+  }|null> {
+   let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=User`;
+    let header = {
+      Authorization: this.botauthtoken,
+    };
+
+    let responce = await axios.get(url, { headers: header });
+
+    if (responce.data.success) {
+      return responce.data;
+    }
+    return null;
+  }
+
+
 }
 
 export const network = Network.getInstance();

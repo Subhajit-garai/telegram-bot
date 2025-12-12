@@ -86,13 +86,12 @@ class QuizManager {
     countdownSteps.forEach((text, i) => {
       setTimeout(() => {
         this.bot.editMessageText(chatid, message_id, text);
-        // Only send question after final countdown step
         if (i === countdownSteps.length - 1) {
           setTimeout(() => {
             next(data);
           }, 500); // 0.5 sec buffer
         }
-      }, i * 1000); // each step every 1 second
+      }, i * 2000); // each step every 2 second
     });
   };
 
@@ -174,8 +173,6 @@ class QuizManager {
       quizOpenFor,
       nextQuestionTime,
     } = data.config;
-
-    console.log("question data is --->", data.questions);
 
     let quiz_id = randomInt(0, 1000000).toString();
 

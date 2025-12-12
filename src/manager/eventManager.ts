@@ -1,7 +1,3 @@
-
-
-
-import axios from "axios";
 import dotenv from "dotenv";
 import { Middleware, TelegramUpdate } from "../types";
 dotenv.config();

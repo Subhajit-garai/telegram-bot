@@ -139,36 +139,43 @@ class UserManager {
 
     console.log("getting admin user data ");
 
+    type primeStatus = "None" | "Bronze" | "Silver" | "Gold";
+
+    type responce_type = {
+      social: {
+        telegram: string | null;
+      } | null;
+      prime: {
+        status: primeStatus;
+        expiry: Date;
+      } | null;
+    }[];
+
     let responce = await axios.get(url, { headers: header });
-    let data = responce.data.data;
+    let data: responce_type = responce.data.data;
 
     if (responce.status) {
       if (Array.isArray(data)) {
         console.log("adding user to local db .....");
-
         data.map((user) => {
-          this.admin.push(parseInt(user.telegram.telegramid));
+          if (!user.social?.telegram)
+            throw Error("telegram data not found or not updated"); //send notification to user to add telegram id
+
+          this.admin.push(parseInt(user.social.telegram));
         });
       }
     }
   }
 
   private async getUserInfomationfromServer() {
-    let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=User`;
+    let data = await this.network.getUserInfomation();
+    if (!data) throw Error("chat ids not found");
 
-    let header = {
-      Authorization: this.network.getAccessToken(),
-    };
-
-    let responce = await axios.get(url, { headers: header });
-
-    let data = responce.data.data;
-
-    if (responce.status) {
-      if (Array.isArray(data)) {
+    if (data) {
+      if (Array.isArray(data.data)) {
         console.log("adding user to local db .....");
 
-        data.map((user) => {
+        data.data.map((user) => {
           let data: User_type = {
             id: user.telegram.telegramid,
             expiry: user.prime.expiry,
@@ -183,19 +190,13 @@ class UserManager {
   }
 
   private async getValidChatidsInfoFromServer() {
-    let url = `${process.env.BE_URL}/api/v1/bot/validchatids`;
-    let header = {
-      Authorization: this.network.getAccessToken(),
-    };
+    let data = await this.network.getvalidChatids();
+    if (!data) throw Error("chat ids not found");
 
-    let responce = await axios.get(url, { headers: header });
-
-    let data = responce.data.data;
-
-    if (responce.status) {
+    if (data) {
       console.log("adding group info  to local db .....");
-      if (Array.isArray(data)) {
-        data.map((group: validChatid_type) => {
+      if (Array.isArray(data.data)) {
+        data.data.map((group: validChatid_type) => {
           this.validChatIds[group.id] = group;
         });
       }

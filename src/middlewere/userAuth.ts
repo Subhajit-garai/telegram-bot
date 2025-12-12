@@ -90,7 +90,6 @@ export const AproveUserTojoin = async (update: TelegramUpdate) => {
     }
 
     // user is prime
-
     let userIsaccessableToJoin = await um.isUserAccessableToJoin(
       userId,
       chatId
