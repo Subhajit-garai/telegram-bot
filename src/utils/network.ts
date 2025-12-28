@@ -141,40 +141,21 @@ export class Network {
   }
   async SendNotificationToSurver(type = "", data: any = null) {
     let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
-    let request = await this.postRequest(url, data);
-    if (request.status == 200) {
-      console.log("response", request.status);
-      console.log("notification sended ..");
-    }
+    return await this.postRequest(url, data);
   }
 
 
   async isprimeUser(user_id: number): Promise<Boolean> {
     let url = this.getUrl(`/api/v1/bot/isprimeuser?userid=${user_id}`);
-    let responce = await this.getRequest(url);
-
-    console.log("isprime user ", responce.data);
-
-    if (responce.data.success && responce.data.data) {
-      return true;
-    }
-    return false;
+    return await this.getRequest(url);
   }
   async groupinfo(chat_id: number) {
     let url = this.getUrl(`/api/v1/bot/group/info?chatid=${chat_id}`);
-    let responce = await this.getRequest(url);
-    if (responce.data.success) {
-      return responce.data;
-    }
-    return false;
+    return await this.getRequest(url);
   }
   async isgroupjoinable(chat_id: number) {
     let url = this.getUrl(`/api/v1/bot/isgroupjoinable?chatid=${chat_id}`);
-    let responce = await this.getRequest(url);
-    if (responce.data.success) {
-      return responce.data;
-    }
-    return false;
+    return await this.getRequest(url);
   }
 
   async getvalidChatids(): Promise<{
@@ -183,12 +164,7 @@ export class Network {
     data: any;
   } | null> {
     let url = `${process.env.BE_URL}/api/v1/bot/validchatids`;
-    let responce = await this.getRequest(url);
-
-    if (responce.data.success) {
-      return responce.data;
-    }
-    return null;
+    return await this.getRequest(url);
   }
   async getUserInfomation(role: "User" | "Admin"): Promise<{
     success: boolean;
@@ -196,12 +172,7 @@ export class Network {
     data: any;
   } | null> {
     let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=${role}`;
-    let responce = await this.getRequest(url);
-
-    if (responce.data.success) {
-      return responce.data;
-    }
-    return null;
+    return await this.getRequest(url);
   }
 
 

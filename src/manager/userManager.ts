@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import dayjs from "dayjs";
 import { Network } from "../utils/network";
 import TelegramBot from "../utils/Telegrambot";
@@ -155,20 +155,20 @@ class UserManager {
     return this.admin.includes(userid);
   }
 
-  isValidChatId(chat_id: number): boolean {    
+  isValidChatId(chat_id: number): boolean {
     return this.validChatIds.hasOwnProperty(String(chat_id));
   }
   async getAdmins() {
     console.log("getting admin user data ");
     let responce = await this.network.getUserInfomation("Admin");
-    if (!responce) throw Error("chat ids not found");
 
+    if (!responce) throw Error("chat ids not found");
     let data: user_data_type = responce.data;
-    
+
     if (Array.isArray(data) && data.length > 0) {
       logger.info("adding admin user to local db .....");
       data.map((user) => {
-        if (user.social.length < 1 ||  user.social[0].platform !== "telegram"){
+        if (user.social.length < 1 || user.social[0].platform !== "telegram") {
           logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
           return
         }
@@ -189,7 +189,7 @@ class UserManager {
       logger.info("adding user to local db .....");
 
       data.map((user) => {
-        if ( user.social.length > 0 && (user.social[0].platform === "telegram" && user.prime)) {
+        if (user.social.length > 0 && (user.social[0].platform === "telegram" && user.prime)) {
           let data: User_type = {
             id: user.social[0].link,
             expiry: user.prime.expiry,
