@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "./logger";
 
 export class Network {
   private static instance: Network | null = null;
@@ -30,6 +31,63 @@ export class Network {
   getAccessToken(): string {
     return this.botauthtoken;
   }
+
+  async postRequest(
+    url: string,
+    data: any,
+    isOnlyData: boolean = false,
+    isOnlyMessage: boolean = false
+  ) {
+    try {
+      if (!this.botauthtoken) {
+        await this.login();
+      }
+
+      let header = {
+        Authorization: this.botauthtoken,
+      };
+      let responce = await axios.post(url, data, { headers: header });
+      if (responce.data.success) {
+        return isOnlyData
+          ? responce.data?.data
+          : isOnlyMessage
+            ? responce.data?.message
+            : responce.data;
+      }
+      return null;
+    } catch (error: any) {
+      logger.error(error?.response?.data?.message)
+      return null;
+    }
+  }
+  async getRequest(
+    url: string,
+    isOnlyData: boolean = false,
+    isOnlyMessage: boolean = false
+  ) {
+    try {
+      if (!this.botauthtoken) {
+        await this.login();
+      }
+
+      let header = {
+        Authorization: this.botauthtoken,
+      };
+      let responce = await axios.get(url, { headers: header });
+
+      if (responce.data.success) {
+        return isOnlyData
+          ? responce.data?.data
+          : isOnlyMessage
+            ? responce.data?.message
+            : responce.data;
+      }
+      return null;
+    } catch (error: any) {
+      logger.error(error?.response?.data?.message)
+      return null;
+    }
+  }
   async auth() {
     try {
       let url = `${this.be_url}/api/v1/bot/auth`;
@@ -38,19 +96,9 @@ export class Network {
       };
       let request = await axios.get(url, { headers: header });
       console.log("response", request.status);
-    } catch (error) {}
+    } catch (error) { }
   }
-  async SendNotificationToSurver(type = "", data: any = null) {
-    let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-    let request = await axios.post(url, data, { headers: header });
-    if (request.status == 200) {
-      console.log("response", request.status);
-      console.log("notification sended ..");
-    }
-  }
+
   async login(retries = 10, delayMs = 3000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
@@ -91,13 +139,19 @@ export class Network {
       }
     }
   }
+  async SendNotificationToSurver(type = "", data: any = null) {
+    let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
+    let request = await this.postRequest(url, data);
+    if (request.status == 200) {
+      console.log("response", request.status);
+      console.log("notification sended ..");
+    }
+  }
+
 
   async isprimeUser(user_id: number): Promise<Boolean> {
     let url = this.getUrl(`/api/v1/bot/isprimeuser?userid=${user_id}`);
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-    let responce = await axios.get(url, { headers: header });
+    let responce = await this.getRequest(url);
 
     console.log("isprime user ", responce.data);
 
@@ -108,10 +162,7 @@ export class Network {
   }
   async groupinfo(chat_id: number) {
     let url = this.getUrl(`/api/v1/bot/group/info?chatid=${chat_id}`);
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-    let responce = await axios.get(url, { headers: header });
+    let responce = await this.getRequest(url);
     if (responce.data.success) {
       return responce.data;
     }
@@ -119,10 +170,7 @@ export class Network {
   }
   async isgroupjoinable(chat_id: number) {
     let url = this.getUrl(`/api/v1/bot/isgroupjoinable?chatid=${chat_id}`);
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-    let responce = await axios.get(url, { headers: header });
+    let responce = await this.getRequest(url);
     if (responce.data.success) {
       return responce.data;
     }
@@ -133,30 +181,22 @@ export class Network {
     success: boolean;
     message: string;
     data: any;
-  }|null> {
+  } | null> {
     let url = `${process.env.BE_URL}/api/v1/bot/validchatids`;
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-
-    let responce = await axios.get(url, { headers: header });
+    let responce = await this.getRequest(url);
 
     if (responce.data.success) {
       return responce.data;
     }
     return null;
   }
-  async getUserInfomation(role:"User"|"Admin"): Promise<{
+  async getUserInfomation(role: "User" | "Admin"): Promise<{
     success: boolean;
     message: string;
     data: any;
-  }|null> {
-   let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=${role}`;
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-
-    let responce = await axios.get(url, { headers: header });
+  } | null> {
+    let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=${role}`;
+    let responce = await this.getRequest(url);
 
     if (responce.data.success) {
       return responce.data;
