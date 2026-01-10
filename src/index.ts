@@ -34,7 +34,7 @@ bot.on("/start", async (update) => {
 bot.on("/feedback", async (update) => {
   let chatId = update.message.chat.id;
   let userId = update.message.from.id;
-  conv.dispatch("feedback",update)  
+  conv.dispatch("feedback", update)
 });
 
 bot.on("/sendchatid", isAdmin, async (update) => {
@@ -70,11 +70,16 @@ bot.on("!Error", isGroupValid, isAdmin, async (update) => {
   // transaction
 });
 
-bot.on("!Check", isGroupValid, isAdmin, async (update) => {});
+bot.on("!Check", isGroupValid, isAdmin, async (update) => { });
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
   logger.success("starting new quiz ...")
-  await quiz.getquestions(update);
+  await quiz.network.getquestions({
+    chatid: update.message.chat.id,
+    chat_type: update.message.chat.type,
+    userid: update.message.from.id,
+    platform: "TELEGRAM"
+  });
 });
 
 // need some security and authentication

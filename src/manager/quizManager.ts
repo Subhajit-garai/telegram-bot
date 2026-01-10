@@ -4,12 +4,10 @@ import { TelegramUpdate } from "../types";
 
 import {
   quiz_info_type,
-  quiz_question_type,
   quiz_user_answer_type,
   quizConfig_data_type,
-  quizConfig_type,
 } from "../types/quizTypes";
-import { randomInt, randomUUID } from "crypto";
+import { randomInt } from "crypto";
 import { Network } from "../utils/network";
 
 class QuizManager {
@@ -32,40 +30,13 @@ class QuizManager {
     this.quizInfo.clear();
   }
 
-  reportQuestionError() {}
-  CheckQuestion() {}
+  reportQuestionError() { }
+  CheckQuestion() { }
 
-  async getquestions(
-    update: TelegramUpdate,
-    type: "quiz"  = "quiz"
-  ) {
-    try {
-      let url = this.network.getUrl(`/api/v1/bot/getquestionsset`);
-      let chatid = update.message.chat.id;
-      let chat_type = update.message.chat.type;
-      let userid = update.message.from.id;
-      let header = {
-        Authorization: this.network.getAccessToken(),
-      };
-      let data = {
-        type: type,
-        chat_type: chat_type,
-        user_id: userid,
-        chat_id: chatid,
-        platform: "TELEGRAM",
-      };
 
-      let request = await axios.post(url, data, { headers: header });      
-      if (request.status === 200) {
-        return request;
-      }
-    } catch (error: any) {
-      console.log("error in getquestions", error.response.data.message);
-    }
-  }
 
   async quiz(data: quizConfig_data_type) {
-    let { chatid, thread_id } = data.config;    
+    let { chatid, thread_id } = data.config;
     // count down
     this.bot.sendMessage(chatid, "Are you ready to quiz?", "TEXT", thread_id);
     this.bot
@@ -186,12 +157,12 @@ class QuizManager {
             case "Code":
               extra
                 ? this.bot.sendMessage(
-                    chatid,
-                    await this.codeFormatter(extra[formate]),
-                    "HTML",
-                    thread_id
-                    //await this.codeFormatter(extra[formate], topic)
-                  )
+                  chatid,
+                  await this.codeFormatter(extra[formate]),
+                  "HTML",
+                  thread_id
+                  //await this.codeFormatter(extra[formate], topic)
+                )
                 : null;
               break;
             case "Image":
@@ -260,9 +231,8 @@ class QuizManager {
     );
     let leaderboard_text = "🏆 Quiz Leaderboard 🏆\n\n";
     sorted_users.forEach((user, index) => {
-      leaderboard_text += `${index + 1}. ${
-        user.first_name ? user.first_name : user.username
-      }  - Score: ${user.score}\n`;
+      leaderboard_text += `${index + 1}. ${user.first_name ? user.first_name : user.username
+        }  - Score: ${user.score}\n`;
     });
     this.bot.sendMessage(chat_id, leaderboard_text, "TEXT", thread_id);
   }

@@ -187,6 +187,37 @@ export class Network {
     return await this.getRequest(url);
   }
 
+  async getquestions(
+    update: {
+      chatid: number,
+      chat_type: string,
+      userid: number,
+      platform: string
+    },
+    type: "quiz" = "quiz"
+  ) {
+    try {
+      let url = this.getUrl(`/api/v1/bot/getquestionsset`);
+      let chatid = update.chatid;
+      let chat_type = update.chat_type;
+      let userid = update.userid;
+      let data = {
+        type: type,
+        chat_type: chat_type,
+        user_id: userid,
+        chat_id: chatid,
+        platform: update.platform,
+      };
+
+      let request = await this.postRequest(url, data);
+      if (request) {
+        return request;
+      }
+    } catch (error: any) {
+      console.log("error in getquestions", error);
+    }
+  }
+
 
 }
 
