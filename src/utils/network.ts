@@ -197,6 +197,8 @@ export class Network {
     type: "quiz" = "quiz"
   ) {
     try {
+      logger.info("getquestions method called");
+
       let url = this.getUrl(`/api/v1/bot/getquestionsset`);
       let chatid = update.chatid;
       let chat_type = update.chat_type;
@@ -211,10 +213,12 @@ export class Network {
 
       let request = await this.postRequest(url, data);
       if (request) {
+        logger.info("getquestions method return success");
+        console.log("getquestions method return success", request);
         return request;
       }
     } catch (error: any) {
-      console.log("error in getquestions", error);
+      logger.error("error in getquestions", error);
     }
   }
 

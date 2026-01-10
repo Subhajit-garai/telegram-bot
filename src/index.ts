@@ -80,6 +80,7 @@ bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
     userid: update.message.from.id,
     platform: "TELEGRAM"
   });
+
 });
 
 // need some security and authentication
