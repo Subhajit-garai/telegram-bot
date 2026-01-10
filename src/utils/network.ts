@@ -57,14 +57,20 @@ export class Network {
       return null;
     } catch (error: any) {
       logger.error(error?.response?.data?.message)
-      return null;
+      if (error?.response?.data?.message === "Invalid or expired token") {
+        await this.login();
+        return await this.getRequest(url, isOnlyData, isOnlyMessage);
+      } else {
+        return null;
+      }
     }
   }
+
   async getRequest(
     url: string,
     isOnlyData: boolean = false,
     isOnlyMessage: boolean = false
-  ) {
+  ): Promise<any> {
     try {
       if (!this.botauthtoken) {
         await this.login();
@@ -73,6 +79,7 @@ export class Network {
       let header = {
         Authorization: this.botauthtoken,
       };
+
       let responce = await axios.get(url, { headers: header });
 
       if (responce.data.success) {
@@ -85,7 +92,13 @@ export class Network {
       return null;
     } catch (error: any) {
       logger.error(error?.response?.data?.message)
-      return null;
+      if (error?.response?.data?.message === "Invalid or expired token") {
+        await this.login();
+        return await this.getRequest(url, isOnlyData, isOnlyMessage);
+      } else {
+        return null;
+      }
+
     }
   }
   async auth() {
@@ -143,7 +156,6 @@ export class Network {
     let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
     return await this.postRequest(url, data);
   }
-
 
   async isprimeUser(user_id: number): Promise<Boolean> {
     let url = this.getUrl(`/api/v1/bot/isprimeuser?userid=${user_id}`);
