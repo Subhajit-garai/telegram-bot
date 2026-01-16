@@ -10,17 +10,17 @@ export type quizConfig_type = {
 };
 
 export type question_extra = {
-  [key:string]:string
+  [key: string]: string
 }
 export type quiz_question_type = {
   id: string;
   topic: string;
   title: string;
-  formate: string;
+  format: string;
   options: string[];
   explanation: string;
   ans: string[];
-  extra:question_extra,
+  extra: question_extra,
 };
 
 export type quizConfig_data_type = {

@@ -148,20 +148,20 @@ class QuizManager {
     let quiz_id = randomInt(0, 1000000).toString();
 
     data.questions.map(async (question, i) => {
-      let { title, options, topic, ans, explanation, id, extra, formate } =
+      let { title, options, ans, explanation, id, extra, format } =
         question;
       let ansid = parseInt(ans[0]) - 1;
       setTimeout(
         async () => {
-          switch (formate) {
+          switch (format) {
             case "Code":
               extra
                 ? this.bot.sendMessage(
                   chatid,
-                  await this.codeFormatter(extra[formate]),
+                  await this.codeFormatter(extra[format]),
                   "HTML",
                   thread_id
-                  //await this.codeFormatter(extra[formate], topic)
+
                 )
                 : null;
               break;
