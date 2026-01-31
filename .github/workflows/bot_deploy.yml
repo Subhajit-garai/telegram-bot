@@ -75,11 +75,11 @@ jobs:
           
             IMAGE=${BOT_IMAGE}:${{ needs.build-Bot.outputs.imagetag }}
             sudo docker pull $IMAGE
-            sudo docker stop exam-bot || true
-            sudo docker rm exam-bot || true
+            sudo docker stop exambot || true
+            sudo docker rm exambot || true
 
             sudo docker run -d \
-            --name exam-bot \
+            --name exambot \
             --env-file /home/ubuntu/deploy/.tele_bot.env \
             --network ${{ secrets.DOCKER_NETWORK}} \
             --network-alias bot \
