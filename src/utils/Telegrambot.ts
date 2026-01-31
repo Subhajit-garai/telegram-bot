@@ -18,7 +18,7 @@ class TelegramBot {
   private correctAnswers: Map<number, number>; // Store correct answers
   private static instance: TelegramBot | null = null;
   private pollHandler: (pollAnswer: TelegramUpdate) => Promise<void> =
-    async () => {};
+    async () => { };
 
   Conversation: Conversation;
 
@@ -27,7 +27,7 @@ class TelegramBot {
     this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN?.trim()!;
     this.AI_MENTOR_BOT_TOKEN = process.env.AI_MENTOR_BOT_TOKEN?.trim()!;
     this.WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
-    this.apiUrl =`https://api.telegram.org/bot${this.token}`;
+    this.apiUrl = `https://api.telegram.org/bot${this.token}`;
     this.commands = new Map();
     this.correctAnswers = new Map();
     this.Conversation = Conversation.getInstance();
@@ -106,19 +106,11 @@ class TelegramBot {
     // const chatId = update.message.chat.id;
     const userId = update?.message?.from?.id;
     const text = update?.message?.text?.trim();
-    const [command, ...args] =(text?.split(" ") ?? [])
+    const [command, ...args] = (text?.split(" ") ?? [])
     update.command = command;
     update.args = args;
 
-    // Initialize if needed
-    if (!this.Conversation.userSessions.has(userId)) {
-      this.Conversation.userSessions.set(userId, {
-        context: "idle",
-        step: "none",
-        data: {},
-        previousContexts: [],
-      });
-    }
+
     if (update.message) {
       // const session = this.Conversation.userSessions.get(userId)!; // getting session info
 
@@ -126,11 +118,7 @@ class TelegramBot {
         // this check is any command like /start then it will be executed asociet function
         this.commands.get(update.command)?.(update);
       } else {
-        let session = conv.getUserCurrentContext(userId);
-        if(!session) return
-        console.log("session---->", session);
-        let context = session.context;
-        conv.dispatch(context, update);
+        // conversation  removed
       }
     } else if (update?.chat_join_request) {
       AproveUserTojoin(update);
@@ -138,9 +126,9 @@ class TelegramBot {
       console.log(
         "Poll answer received for user :---->",
         update.poll_answer?.user?.first_name +
-          "(" +
-          update.poll_answer?.user?.id +
-          ")"
+        "(" +
+        update.poll_answer?.user?.id +
+        ")"
       );
 
       this.pollHandler(update);
@@ -386,7 +374,7 @@ class TelegramBot {
   private async setWebhook(url: string) {
     try {
       const res = await axios.get(`${this.apiUrl}/getWebhookInfo`);
-      if(res.status !== 200) {
+      if (res.status !== 200) {
         console.error("Failed to get webhook info:", res);
         console.error("requested url :", `${this.apiUrl}/getWebhookInfo`);
         return;
@@ -413,8 +401,8 @@ class TelegramBot {
         return responce.data.result;
       }
     } catch (error: any) {
-      
-      console.error( "error -->" ,error?.response?.data?.description);
+
+      console.error("error -->", error?.response?.data?.description);
     }
   }
   // ban and unban`

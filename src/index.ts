@@ -24,18 +24,11 @@ bot.on("/start", async (update) => {
   let chatId = update.message.chat.id;
   await bot.sendMessage(
     chatId,
-    `Welcome to the exambuddys ! \n
+    `Welcome to the exambuddys !! \n
      Type /sendMyId to get your telegram id.`
   );
 });
 
-
-
-bot.on("/feedback", async (update) => {
-  let chatId = update.message.chat.id;
-  let userId = update.message.from.id;
-  conv.dispatch("feedback", update)
-});
 
 bot.on("/sendchatid", isAdmin, async (update) => {
   let userid = update.message.from.id;
@@ -58,19 +51,6 @@ bot.on("/sendMyId", async (update) => {
 });
 
 
-bot.on("!Error", isGroupValid, isAdmin, async (update) => {
-  let chatId = update.message.chat.id;
-  let userId = update.message.from.id;
-
-  await bot.sendMessage(
-    chatId,
-    `Can you share more detail about Error : ->${update?.args[0]}`
-  );
-
-  // transaction
-});
-
-bot.on("!Check", isGroupValid, isAdmin, async (update) => { });
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
   logger.success("starting new quiz ...")
