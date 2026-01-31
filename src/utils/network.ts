@@ -101,6 +101,8 @@ export class Network {
 
     }
   }
+
+
   async auth() {
     try {
       let url = `${this.be_url}/api/v1/bot/auth`;
@@ -158,15 +160,18 @@ export class Network {
   }
 
   async isprimeUser(user_id: number): Promise<Boolean> {
-    let url = this.getUrl(`/api/v1/bot/isprimeuser?userid=${user_id}`);
+    let url = this.getUrl(`/api/v1/bot/user/isprimeuser?userid=${user_id}`);
     return await this.getRequest(url);
   }
+
+  //checking
+
   async groupinfo(chat_id: number) {
-    let url = this.getUrl(`/api/v1/bot/group/info?chatid=${chat_id}`);
+    let url = this.getUrl(`/api/v1/bot/telegram/group/info?chatid=${chat_id}`);
     return await this.getRequest(url);
   }
   async isgroupjoinable(chat_id: number) {
-    let url = this.getUrl(`/api/v1/bot/isgroupjoinable?chatid=${chat_id}`);
+    let url = this.getUrl(`/api/v1/bot/telegram/isgroupjoinable?chatid=${chat_id}`);
     return await this.getRequest(url);
   }
 
@@ -175,7 +180,7 @@ export class Network {
     message: string;
     data: any;
   } | null> {
-    let url = `${process.env.BE_URL}/api/v1/bot/validchatids`;
+    let url = `${process.env.BE_URL}/api/v1/bot/telegram/validchatids`;
     return await this.getRequest(url);
   }
   async getUserInfomation(role: "User" | "Admin"): Promise<{
@@ -183,7 +188,7 @@ export class Network {
     message: string;
     data: any;
   } | null> {
-    let url = `${process.env.BE_URL}/api/v1/bot/getusersdata?role=${role}`;
+    let url = `${process.env.BE_URL}/api/v1/bot/telegram/getusersdata?role=${role}`;
     return await this.getRequest(url);
   }
 
@@ -199,7 +204,7 @@ export class Network {
     try {
       logger.info("getquestions method called");
 
-      let url = this.getUrl(`/api/v1/bot/getquestionsset`);
+      let url = this.getUrl(`/api/v1/bot/quiz/getquestionsset`);
       let chatid = update.chatid;
       let chat_type = update.chat_type;
       let userid = update.userid;
