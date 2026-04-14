@@ -23,7 +23,9 @@
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.5.0",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "prisma": "^7.5.0",
+    "ioredis": "^5.5.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
