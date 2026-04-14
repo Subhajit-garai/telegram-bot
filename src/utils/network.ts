@@ -159,12 +159,13 @@ export class Network {
     return await this.postRequest(url, data);
   }
 
+  // user
   async isprimeUser(user_id: number): Promise<Boolean> {
     let url = this.getUrl(`/api/v1/bot/user/isprimeuser?userid=${user_id}`);
     return await this.getRequest(url);
   }
 
-  //checking
+  //telegrams
 
   async groupinfo(chat_id: number) {
     let url = this.getUrl(`/api/v1/bot/telegram/group/info?chatid=${chat_id}`);
@@ -183,6 +184,7 @@ export class Network {
     let url = `${process.env.BE_URL}/api/v1/bot/telegram/validchatids`;
     return await this.getRequest(url);
   }
+
   async getUserInfomation(role: "User" | "Admin"): Promise<{
     success: boolean;
     message: string;
@@ -192,6 +194,9 @@ export class Network {
     return await this.getRequest(url);
   }
 
+
+
+  // questions
   async getquestions(
     update: {
       chatid: number,
