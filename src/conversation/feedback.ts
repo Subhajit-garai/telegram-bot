@@ -1,6 +1,6 @@
-import { bot } from "..";
-import { Conversation } from "../manager/conversationSession";
-import { ContextStep, TelegramUpdate } from "../types";
+import { bot } from "../index.js";
+import { Conversation } from "../manager/conversationSession.js";
+import { ContextStep, TelegramUpdate } from "../types/index.js";
 
 let conv = Conversation.getInstance();
 

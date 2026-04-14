@@ -1,12 +1,12 @@
 
 import dayjs from "dayjs";
-import { Network } from "../utils/network";
-import TelegramBot from "../utils/Telegrambot";
+import { Network } from "../utils/network.js";
+import TelegramBot from "../utils/Telegrambot.js";
 
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { loggeDate, logger } from "../utils/logger";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { loggeDate, logger } from "../utils/logger.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);

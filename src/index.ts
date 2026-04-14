@@ -1,12 +1,12 @@
 import express from "express";
 import "dotenv/config";
-import TelegramBot from "./utils/Telegrambot";
-import QuizManager from "./manager/quizManager";
-import UserManager from "./manager/userManager";
-import { isAdmin, isGroupValid } from "./middlewere/userAuth";
-import { Conversation } from "./manager/conversationSession";
-import "./conversation/feedback"
-import { logger } from "./utils/logger";
+import TelegramBot from "./utils/Telegrambot.js";
+import QuizManager from "./manager/quizManager.js";
+import UserManager from "./manager/userManager.js";
+import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
+import { Conversation } from "./manager/conversationSession.js";
+import "./conversation/feedback.js";
+import { logger } from "./utils/logger.js";
 
 const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
@@ -54,6 +54,7 @@ bot.on("/sendMyId", async (update) => {
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
   logger.success("starting new quiz ...")
+
   await quiz.network.getquestions({
     chatid: update.message.chat.id,
     chat_type: update.message.chat.type,

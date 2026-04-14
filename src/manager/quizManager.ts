@@ -1,6 +1,6 @@
 import axios from "axios";
-import TelegramBot from "../utils/Telegrambot";
-import { TelegramUpdate } from "../types";
+import TelegramBot from "../utils/Telegrambot.js";
+import { TelegramUpdate } from "../types/index.js";
 
 import {
   quiz_info_type,
@@ -8,7 +8,7 @@ import {
   quizConfig_data_type,
 } from "../types/quizTypes";
 import { randomInt } from "crypto";
-import { Network } from "../utils/network";
+import { Network } from "../utils/network.js";
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;

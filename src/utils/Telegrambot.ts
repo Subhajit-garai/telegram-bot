@@ -1,8 +1,8 @@
 import axios from "axios";
-import { Middleware, TelegramUpdate } from "../types";
-import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth";
-import { Conversation } from "../manager/conversationSession";
-import { conv } from "..";
+import { Middleware, TelegramUpdate } from "../types/index.js";
+import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth.js";
+import { Conversation } from "../manager/conversationSession.js";
+import { conv } from "../index.js";
 
 class TelegramBot {
   private token: string;
