@@ -7,6 +7,7 @@ import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
 import { Conversation } from "./manager/conversationSession.js";
 import "./conversation/feedback.js";
 import { logger } from "./utils/logger.js";
+import { QuizeSetupFunction } from "./utils/TelegramQuiz.js";
 
 const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
@@ -55,12 +56,13 @@ bot.on("/sendMyId", async (update) => {
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
   logger.success("starting new quiz ...")
 
-  await quiz.network.getquestions({
-    chatid: update.message.chat.id,
-    chat_type: update.message.chat.type,
-    userid: update.message.from.id,
-    platform: "TELEGRAM"
-  });
+  await QuizeSetupFunction(
+    String(update.message.from.id),
+    String(update.message.chat.id),
+    "quiz",
+    "TELEGRAM",
+    update.message.chat.type
+  );
 
 });
 

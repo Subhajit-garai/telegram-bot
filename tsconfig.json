@@ -11,8 +11,8 @@
       "@repo/utils/*": [
         "./src/utils/*"
       ],
-      "@repo/tasks/*": [
-        "./src/tasks/*"
+      "@repo/types/*": [
+        "./src/types/*"
       ],
       "@repo/db/*": [
         "./src/db/*"

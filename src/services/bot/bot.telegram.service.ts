@@ -4,18 +4,19 @@ import {
     unbanuser_notification_zod_type,
 } from "../../zod/bot.zod.js";
 import { SocialPlatform } from "@repo/prisma/enums.js";
+import { error } from "console";
 
 
 export class BotTelegramService {
     /**
      * Handles bot notifications (ban/unban).
      */
-    async processNotification(type: string, data: any, botUserId: string) {
+    async processNotification(type: string, data: any) {
         switch (type) {
             case "unbanuser":
                 return this.handleUnbanUser(data);
             case "banuser":
-                return this.handleBanUser(data, botUserId);
+                return this.handleBanUser(data);
             default:
                 throw new Error(`Unknown notification type: ${type}`);
         }
@@ -50,17 +51,24 @@ export class BotTelegramService {
         return { message: "User unbanned successfully" };
     }
 
-    private async handleBanUser(data: any, botUserId: string) {
+    private async handleBanUser(data: any) {
         const validation = banuser_notification_zod_type.safeParse(data);
         if (!validation.success) throw new Error("Invalid data format for banuser");
 
         const { user_id, chat_id, ban_from_type } = validation.data;
+        let botuser = await prisma.user.findFirst({
+            where: {
+                role: "Bot"
+            }
+        })
+
+        if (!botuser) throw Error("Bot user not found")
 
         await prisma.telegram_ban_user.create({
             data: {
                 user_telegram_id: user_id,
-                bot_id: botUserId,
                 ban_from_id: chat_id,
+                bot_id: botuser.id,
                 ban_from_type: ban_from_type,
                 status: "Ban",
             },
@@ -130,9 +138,9 @@ export class BotTelegramService {
         return groupInfo?.isBanned === false;
     }
 
-    async getUsersByRole(role: any) {
+    async getUsersByRole(role: "User" | "Admin" = "User") {
         const users = await prisma.user.findMany({
-            where: { role: role ?? "User" },
+            where: { role: role },
             select: {
                 social: {
                     where: {

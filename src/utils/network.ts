@@ -184,55 +184,6 @@ export class Network {
     let url = `${process.env.BE_URL}/api/v1/bot/telegram/validchatids`;
     return await this.getRequest(url);
   }
-
-  async getUserInfomation(role: "User" | "Admin"): Promise<{
-    success: boolean;
-    message: string;
-    data: any;
-  } | null> {
-    let url = `${process.env.BE_URL}/api/v1/bot/telegram/getusersdata?role=${role}`;
-    return await this.getRequest(url);
-  }
-
-
-
-  // questions
-  async getquestions(
-    update: {
-      chatid: number,
-      chat_type: string,
-      userid: number,
-      platform: string
-    },
-    type: "quiz" = "quiz"
-  ) {
-    try {
-      logger.info("getquestions method called");
-
-      let url = this.getUrl(`/api/v1/bot/quiz/getquestionsset`);
-      let chatid = update.chatid;
-      let chat_type = update.chat_type;
-      let userid = update.userid;
-      let data = {
-        type: type,
-        chat_type: chat_type,
-        user_id: userid,
-        chat_id: chatid,
-        platform: update.platform,
-      };
-
-      let request = await this.postRequest(url, data);
-      if (request) {
-        logger.info("getquestions method return success");
-        console.log("getquestions method return success", request);
-        return request;
-      }
-    } catch (error: any) {
-      logger.error("error in getquestions", error);
-    }
-  }
-
-
 }
 
 export const network = Network.getInstance();

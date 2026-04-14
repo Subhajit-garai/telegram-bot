@@ -7,6 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { loggeDate, logger } from "../utils/logger.js";
+import { BotService } from "@/services/bot.service.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -63,14 +64,14 @@ class UserManager {
   private validChatIds: validChatids_type = {};
   private lastupdatedTime: string = "";
   private static instance: UserManager;
-  network: Network;
+  botService: BotService;
   bot: TelegramBot;
   refreshtime: number = parseInt(process.env.REFRESH_TIME?.trim()!) ?? 60; // in minutes
 
   private constructor() {
     this.init();
     this.refreshUserdataList();
-    this.network = Network.getInstance();
+    this.botService = new BotService();
     this.bot = TelegramBot.getInstance();
     // this.refreshtime = parseInt(process.env.REFRESH_TIME!) ;
     console.log(
@@ -108,8 +109,6 @@ class UserManager {
   private async init() {
     console.log("init ....");
 
-    await this.waitForLogin();
-
     let isSucess = await this.getUserInfomationfromServer();
     let isAdminSuccess = await this.getAdmins();
     await this.getValidChatidsInfoFromServer();
@@ -124,20 +123,7 @@ class UserManager {
     return false;
   }
 
-  private waitForLogin(): Promise<void> {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (this.network?.islogin ?? false) {
-          resolve();
-        } else {
-          console.log("checking again ...");
 
-          setTimeout(check, 3000); // check again after 1 second
-        }
-      };
-      check();
-    });
-  }
 
   addUser(id: string, data: User_type): void {
     this.users[id] = data;
@@ -160,14 +146,13 @@ class UserManager {
   }
   async getAdmins() {
     console.log("getting admin user data ");
-    let responce = await this.network.getUserInfomation("Admin");
+    let responce = await this.botService.telegram.getUsersByRole("Admin");
 
     if (!responce) throw Error("chat ids not found");
-    let data: user_data_type = responce.data;
 
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(responce) && responce.length > 0) {
       logger.info("adding admin user to local db .....");
-      data.map((user) => {
+      responce.map((user) => {
         if (user.social.length < 1 || user.social[0].platform !== "telegram") {
           logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
           return
@@ -178,17 +163,13 @@ class UserManager {
   }
 
   private async getUserInfomationfromServer() {
-    let responce = await this.network.getUserInfomation("User");
-    if (!responce) throw Error("chat ids not found");
+    let users = await this.botService.telegram.getUsersByRole("User");
+    if (!users) throw Error("chat ids not found");
 
-    let data: user_data_type = responce.data;
-
-
-
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(users) && users.length > 0) {
       logger.info("adding user to local db .....");
 
-      data.map((user) => {
+      users.map((user) => {
         if (user.social.length > 0 && (user.social[0].platform === "telegram" && user.prime)) {
           let data: User_type = {
             id: user.social[0].link,
@@ -204,13 +185,13 @@ class UserManager {
   }
 
   private async getValidChatidsInfoFromServer() {
-    let data = await this.network.getvalidChatids();
-    if (!data) throw Error("chat ids not found");
+    let chatids = await this.botService.telegram.getValidChatIds();
+    if (!chatids) throw Error("chat ids not found");
 
-    if (data) {
+    if (chatids) {
       console.log("adding group info  to local db .....");
-      if (Array.isArray(data.data)) {
-        data.data.map((group: validChatid_type) => {
+      if (Array.isArray(chatids)) {
+        chatids.map((group) => {
           this.validChatIds[group.id] = group;
         });
       }
@@ -237,7 +218,7 @@ class UserManager {
   }
 
   async isGroupOnline(chat_id: number): Promise<boolean> {
-    let isgroupjoinable = await this.network.isgroupjoinable(chat_id);
+    let isgroupjoinable = await this.botService.telegram.isGroupJoinable(String(chat_id));
 
     if (isgroupjoinable) {
       return true;
@@ -250,7 +231,7 @@ class UserManager {
     user_id: number,
     chat_id: number
   ): Promise<{ success: boolean; message: string }> {
-    let isprime = await this.network.isprimeUser(user_id);
+    let isprime = await this.botService.telegram.isPrimeUser(String(user_id));
 
     if (isprime) {
       return { success: true, message: "user is eligible " };
@@ -309,7 +290,7 @@ class UserManager {
                 // console.log("user is banned successfully");
 
                 let chatData = this.validChatIds[chat_id.toString()];
-                await this.network.SendNotificationToSurver("banuser", {
+                await this.botService.telegram.processNotification("banuser", {
                   user_id: String(userId),
                   chat_id: String(chat_id),
                   ban_from_type: chatData.type,
@@ -357,12 +338,12 @@ class UserManager {
             user_id,
             "you can join the group again."
           );
-          await this.network.SendNotificationToSurver("unbanuser", {
+          await this.botService.telegram.processNotification("unbanuser", {
             user_id: String(user_id),
             chat_id: String(chat_id),
           });
         } else {
-          await this.network.SendNotificationToSurver("unbanuser", {
+          await this.botService.telegram.processNotification("unbanuser", {
             success: false,
             message: `un able to  unbaned user .Id is --> ${user_id} from ${chat_id}`,
           });
