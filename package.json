@@ -4,8 +4,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc -b && node dist/index.js",
-    "build": "tsc --build"
+    "dev": "tsc -b && tsc-alias && node dist/src/index.js",
+    "start:dev": "tsc --build && tsc-alias && node dist/src/index.js",
+    "build": "tsc --build && tsc-alias",
+    "start": "node dist/src/index.js",
+    "gen": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -16,13 +19,14 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "@prisma/adapter-pg": "^7.0.1",
+    "@prisma/client": "^7.5.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
-    "@types/node": "^22.14.0",
-    "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "@types/node": "^22.14.0"
   }
 }
