@@ -1,189 +1,189 @@
-import axios from "axios";
-import { logger } from "./logger.js";
+// import axios from "axios";
+// import { logger } from "./logger.js";
 
-export class Network {
-  private static instance: Network | null = null;
+// export class Network {
+//   private static instance: Network | null = null;
 
-  private username: string;
-  private password: string;
-  private botauthtoken: string;
-  islogin: boolean = false;
-  private be_url: string = process.env.BE_URL || "";
+//   private username: string;
+//   private password: string;
+//   private botauthtoken: string;
+//   islogin: boolean = false;
+//   private be_url: string = process.env.BE_URL || "";
 
-  private constructor() {
-    this.username = process.env.BE_USERNAME || "";
-    this.password = process.env.BE_PASSWORD || "";
-    this.botauthtoken = "";
+//   private constructor() {
+//     this.username = process.env.BE_USERNAME || "";
+//     this.password = process.env.BE_PASSWORD || "";
+//     this.botauthtoken = "";
 
-    this.login();
-  }
+//     this.login();
+//   }
 
-  public static getInstance(): Network {
-    if (!Network.instance) {
-      Network.instance = new Network();
-    }
-    return Network.instance;
-  }
+//   public static getInstance(): Network {
+//     if (!Network.instance) {
+//       Network.instance = new Network();
+//     }
+//     return Network.instance;
+//   }
 
-  getUrl(path: string): string {
-    return `${this.be_url}${path}`;
-  }
-  getAccessToken(): string {
-    return this.botauthtoken;
-  }
+//   getUrl(path: string): string {
+//     return `${this.be_url}${path}`;
+//   }
+//   getAccessToken(): string {
+//     return this.botauthtoken;
+//   }
 
-  async postRequest(
-    url: string,
-    data: any,
-    isOnlyData: boolean = false,
-    isOnlyMessage: boolean = false
-  ) {
-    try {
-      if (!this.botauthtoken) {
-        await this.login();
-      }
+//   async postRequest(
+//     url: string,
+//     data: any,
+//     isOnlyData: boolean = false,
+//     isOnlyMessage: boolean = false
+//   ) {
+//     try {
+//       if (!this.botauthtoken) {
+//         await this.login();
+//       }
 
-      let header = {
-        Authorization: this.botauthtoken,
-      };
-      let responce = await axios.post(url, data, { headers: header });
-      if (responce.data.success) {
-        return isOnlyData
-          ? responce.data?.data
-          : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
-      }
-      return null;
-    } catch (error: any) {
-      logger.error(error?.response?.data?.message)
-      if (error?.response?.data?.message === "Invalid or expired token") {
-        await this.login();
-        return await this.getRequest(url, isOnlyData, isOnlyMessage);
-      } else {
-        return null;
-      }
-    }
-  }
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
+//       let responce = await axios.post(url, data, { headers: header });
+//       if (responce.data.success) {
+//         return isOnlyData
+//           ? responce.data?.data
+//           : isOnlyMessage
+//             ? responce.data?.message
+//             : responce.data;
+//       }
+//       return null;
+//     } catch (error: any) {
+//       logger.error(error?.response?.data?.message)
+//       if (error?.response?.data?.message === "Invalid or expired token") {
+//         await this.login();
+//         return await this.getRequest(url, isOnlyData, isOnlyMessage);
+//       } else {
+//         return null;
+//       }
+//     }
+//   }
 
-  async getRequest(
-    url: string,
-    isOnlyData: boolean = false,
-    isOnlyMessage: boolean = false
-  ): Promise<any> {
-    try {
-      if (!this.botauthtoken) {
-        await this.login();
-      }
+//   async getRequest(
+//     url: string,
+//     isOnlyData: boolean = false,
+//     isOnlyMessage: boolean = false
+//   ): Promise<any> {
+//     try {
+//       if (!this.botauthtoken) {
+//         await this.login();
+//       }
 
-      let header = {
-        Authorization: this.botauthtoken,
-      };
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
 
-      let responce = await axios.get(url, { headers: header });
+//       let responce = await axios.get(url, { headers: header });
 
-      if (responce.data.success) {
-        return isOnlyData
-          ? responce.data?.data
-          : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
-      }
-      return null;
-    } catch (error: any) {
-      logger.error(error?.response?.data?.message)
-      if (error?.response?.data?.message === "Invalid or expired token") {
-        await this.login();
-        return await this.getRequest(url, isOnlyData, isOnlyMessage);
-      } else {
-        return null;
-      }
+//       if (responce.data.success) {
+//         return isOnlyData
+//           ? responce.data?.data
+//           : isOnlyMessage
+//             ? responce.data?.message
+//             : responce.data;
+//       }
+//       return null;
+//     } catch (error: any) {
+//       logger.error(error?.response?.data?.message)
+//       if (error?.response?.data?.message === "Invalid or expired token") {
+//         await this.login();
+//         return await this.getRequest(url, isOnlyData, isOnlyMessage);
+//       } else {
+//         return null;
+//       }
 
-    }
-  }
+//     }
+//   }
 
 
-  async auth() {
-    try {
-      let url = `${this.be_url}/api/v1/bot/auth`;
-      let header = {
-        Authorization: this.botauthtoken,
-      };
-      let request = await axios.get(url, { headers: header });
-      console.log("response", request.status);
-    } catch (error) { }
-  }
+//   async auth() {
+//     try {
+//       let url = `${this.be_url}/api/v1/bot/auth`;
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
+//       let request = await axios.get(url, { headers: header });
+//       console.log("response", request.status);
+//     } catch (error) { }
+//   }
 
-  async login(retries = 10, delayMs = 3000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        console.log("login porcess started .... ", `Attempt ${attempt}`);
-        let url = `${this.be_url}/api/v1/bot/login`;
-        let logindata = {
-          email: this.username,
-          password: this.password,
-        };
-        let request = await axios.post(url, logindata);
+//   async login(retries = 10, delayMs = 3000) {
+//     for (let attempt = 1; attempt <= retries; attempt++) {
+//       try {
+//         console.log("login porcess started .... ", `Attempt ${attempt}`);
+//         let url = `${this.be_url}/api/v1/bot/login`;
+//         let logindata = {
+//           email: this.username,
+//           password: this.password,
+//         };
+//         let request = await axios.post(url, logindata);
 
-        console.log("login request", request.status);
+//         console.log("login request", request.status);
 
-        if (request) {
-          console.log("Login successful");
-          if (request?.data?.success) {
-            console.log("Setting bot token....");
-            this.botauthtoken = request?.data?.data;
-            this.islogin = true;
-            console.log("Bot token set successfully");
-            return true;
-          }
-          return true;
-        } else {
-          console.log("Login failed");
-          return false;
-        }
-      } catch (error: any) {
-        console.error(`❌ Login attempt ${attempt} failed:`, error?.message);
+//         if (request) {
+//           console.log("Login successful");
+//           if (request?.data?.success) {
+//             console.log("Setting bot token....");
+//             this.botauthtoken = request?.data?.data;
+//             this.islogin = true;
+//             console.log("Bot token set successfully");
+//             return true;
+//           }
+//           return true;
+//         } else {
+//           console.log("Login failed");
+//           return false;
+//         }
+//       } catch (error: any) {
+//         console.error(`❌ Login attempt ${attempt} failed:`, error?.message);
 
-        if (attempt === retries) {
-          console.error("❌ All login attempts failed. Exiting.");
-          process.exit(1); // exit app if still not successful
-        }
+//         if (attempt === retries) {
+//           console.error("❌ All login attempts failed. Exiting.");
+//           process.exit(1); // exit app if still not successful
+//         }
 
-        console.log(`🔁 Waiting ${delayMs}ms before retrying...`);
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    }
-  }
-  async SendNotificationToSurver(type = "", data: any = null) {
-    let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
-    return await this.postRequest(url, data);
-  }
+//         console.log(`🔁 Waiting ${delayMs}ms before retrying...`);
+//         await new Promise((resolve) => setTimeout(resolve, delayMs));
+//       }
+//     }
+//   }
+//   async SendNotificationToSurver(type = "", data: any = null) {
+//     let url = this.getUrl(`/api/v1/bot/notification?type=${type}`);
+//     return await this.postRequest(url, data);
+//   }
 
-  // user
-  async isprimeUser(user_id: number): Promise<Boolean> {
-    let url = this.getUrl(`/api/v1/bot/user/isprimeuser?userid=${user_id}`);
-    return await this.getRequest(url);
-  }
+//   // user
+//   async isprimeUser(user_id: number): Promise<Boolean> {
+//     let url = this.getUrl(`/api/v1/bot/user/isprimeuser?userid=${user_id}`);
+//     return await this.getRequest(url);
+//   }
 
-  //telegrams
+//   //telegrams
 
-  async groupinfo(chat_id: number) {
-    let url = this.getUrl(`/api/v1/bot/telegram/group/info?chatid=${chat_id}`);
-    return await this.getRequest(url);
-  }
-  async isgroupjoinable(chat_id: number) {
-    let url = this.getUrl(`/api/v1/bot/telegram/isgroupjoinable?chatid=${chat_id}`);
-    return await this.getRequest(url);
-  }
+//   async groupinfo(chat_id: number) {
+//     let url = this.getUrl(`/api/v1/bot/telegram/group/info?chatid=${chat_id}`);
+//     return await this.getRequest(url);
+//   }
+//   async isgroupjoinable(chat_id: number) {
+//     let url = this.getUrl(`/api/v1/bot/telegram/isgroupjoinable?chatid=${chat_id}`);
+//     return await this.getRequest(url);
+//   }
 
-  async getvalidChatids(): Promise<{
-    success: boolean;
-    message: string;
-    data: any;
-  } | null> {
-    let url = `${process.env.BE_URL}/api/v1/bot/telegram/validchatids`;
-    return await this.getRequest(url);
-  }
-}
+//   async getvalidChatids(): Promise<{
+//     success: boolean;
+//     message: string;
+//     data: any;
+//   } | null> {
+//     let url = `${process.env.BE_URL}/api/v1/bot/telegram/validchatids`;
+//     return await this.getRequest(url);
+//   }
+// }
 
-export const network = Network.getInstance();
+// export const network = Network.getInstance();

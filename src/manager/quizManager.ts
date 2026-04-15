@@ -8,20 +8,18 @@ import {
   quizConfig_data_type,
 } from "../types/quizTypes";
 import { randomInt } from "crypto";
-import { Network } from "../utils/network.js";
+
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;
   private quizInfo: Map<string, quiz_info_type>;
 
   bot: TelegramBot;
-  network: Network;
 
   constructor() {
     this.quizInfo = new Map();
     this.userAnswers = new Map();
     this.bot = TelegramBot.getInstance();
-    this.network = Network.getInstance();
   }
 
   clearcache() {

@@ -4,7 +4,8 @@ import {
     unbanuser_notification_zod_type,
 } from "../../zod/bot.zod.js";
 import { SocialPlatform } from "@repo/prisma/enums.js";
-import { error } from "console";
+import { logger } from "@/utils/logger.js";
+
 
 
 export class BotTelegramService {
@@ -139,13 +140,17 @@ export class BotTelegramService {
     }
 
     async getUsersByRole(role: "User" | "Admin" = "User") {
-        const users = await prisma.user.findMany({
-            where: { role: role },
+
+        let users = await prisma.user.findMany({
+            where: {
+                role: role,
+            },
             select: {
                 social: {
-                    where: {
-                        platform: SocialPlatform.telegram
-                    },
+                    select: {
+                        platform: true,
+                        link: true,
+                    }
                 },
                 prime: { select: { status: true, expiry: true } },
             },

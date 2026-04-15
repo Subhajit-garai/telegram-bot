@@ -2,6 +2,7 @@
   "name": "js_tele_bot",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc -b && tsc-alias && node dist/src/index.js",
