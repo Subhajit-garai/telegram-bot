@@ -80,7 +80,7 @@ jobs:
 
             sudo docker run -d \
             --name exambot \
-            --env-file /home/ubuntu/deploy/.tele_bot.env \
+            --env-file /home/ubuntu/deploy/.exambot.env \
             --network ${{ secrets.DOCKER_NETWORK}} \
             --network-alias bot \
             -p 4444:4444 \
