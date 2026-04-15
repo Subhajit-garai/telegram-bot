@@ -1,6 +1,6 @@
-import axios from "axios";
-import TelegramBot from "../utils/Telegrambot";
-import { TelegramUpdate } from "../types";
+
+import TelegramBot from "../utils/Telegrambot.js";
+import { TelegramUpdate } from "../types/index.js";
 
 import {
   quiz_info_type,
@@ -8,20 +8,18 @@ import {
   quizConfig_data_type,
 } from "../types/quizTypes";
 import { randomInt } from "crypto";
-import { Network } from "../utils/network";
+
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;
   private quizInfo: Map<string, quiz_info_type>;
 
   bot: TelegramBot;
-  network: Network;
 
   constructor() {
     this.quizInfo = new Map();
     this.userAnswers = new Map();
     this.bot = TelegramBot.getInstance();
-    this.network = Network.getInstance();
   }
 
   clearcache() {
@@ -30,8 +28,8 @@ class QuizManager {
     this.quizInfo.clear();
   }
 
-  reportQuestionError() { }
-  CheckQuestion() { }
+  reportQuestionError(number?: number) { }
+  CheckQuestion(number?: number) { }
 
 
 
@@ -151,6 +149,7 @@ class QuizManager {
       let { title, options, ans, explanation, id, extra, format } =
         question;
       let ansid = parseInt(ans[0]) - 1;
+      let question_time = i * nextQuestionTime * 1000;
       setTimeout(
         async () => {
           switch (format) {
@@ -199,15 +198,16 @@ class QuizManager {
             // console.log("quiz info", this.quizInfo);
           }
         },
-        i * nextQuestionTime * 1000
+        question_time
       );
     });
 
+    let Leaderboard_time = total_questions * nextQuestionTime * 1000 + 2 * quizOpenFor * 1000
     setTimeout(
       () => {
         this.showleaderBoard(quiz_id, chatid, thread_id);
       },
-      total_questions * nextQuestionTime * 1000 + 2 * quizOpenFor * 1000
+      Leaderboard_time
     );
   };
 

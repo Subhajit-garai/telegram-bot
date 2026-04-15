@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { Middleware, TelegramUpdate } from "../types";
+import { Middleware, TelegramUpdate } from "../types/index.js";
 dotenv.config();
 
 class EventManager {

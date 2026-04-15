@@ -1,12 +1,13 @@
 import express from "express";
 import "dotenv/config";
-import TelegramBot from "./utils/Telegrambot";
-import QuizManager from "./manager/quizManager";
-import UserManager from "./manager/userManager";
-import { isAdmin, isGroupValid } from "./middlewere/userAuth";
-import { Conversation } from "./manager/conversationSession";
-import "./conversation/feedback"
-import { logger } from "./utils/logger";
+import TelegramBot from "./utils/Telegrambot.js";
+import QuizManager from "./manager/quizManager.js";
+import UserManager from "./manager/userManager.js";
+import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
+import { Conversation } from "./manager/conversationSession.js";
+import "./conversation/feedback.js";
+import { logger } from "./utils/logger.js";
+import { QuizeSetupFunction } from "./utils/TelegramQuiz.js";
 
 const PORT = process.env.PORT || 4444;
 const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
@@ -25,7 +26,15 @@ bot.on("/start", async (update) => {
   await bot.sendMessage(
     chatId,
     `Welcome to the exambuddys !! \n
-     Type /sendMyId to get your telegram id.`
+     Type /sendMyId to get your telegram id.
+     Type /help to get more info.
+     Type /quiz to start a quiz.
+     Type /schdule to get schdule of quiz.
+
+     ** Error Reporting **
+     Type !Error to report any error.
+     Type !Error 20 to report error with question number (20).
+     `
   );
 });
 
@@ -54,12 +63,14 @@ bot.on("/sendMyId", async (update) => {
 
 bot.on("/quiz", isGroupValid, isAdmin, async (update) => {
   logger.success("starting new quiz ...")
-  await quiz.network.getquestions({
-    chatid: update.message.chat.id,
-    chat_type: update.message.chat.type,
-    userid: update.message.from.id,
-    platform: "TELEGRAM"
-  });
+
+  await QuizeSetupFunction(
+    String(update.message.from.id),
+    String(update.message.chat.id),
+    "quiz",
+    "TELEGRAM",
+    update.message.chat.type
+  );
 
 });
 

@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Middleware, TelegramUpdate } from "../types";
-import { bot, um } from "..";
+import { Middleware, TelegramUpdate } from "../types/index.js";
+import { bot, um } from "../index.js";
 
 export const isGroupValid: Middleware = async (
   update: TelegramUpdate,

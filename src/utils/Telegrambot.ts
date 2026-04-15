@@ -1,8 +1,9 @@
 import axios from "axios";
-import { Middleware, TelegramUpdate } from "../types";
-import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth";
-import { Conversation } from "../manager/conversationSession";
-import { conv } from "..";
+import { Middleware, TelegramUpdate } from "../types/index.js";
+import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth.js";
+import { Conversation } from "../manager/conversationSession.js";
+import { conv } from "../index.js";
+import { logger } from "./logger.js";
 
 class TelegramBot {
   private token: string;
@@ -393,6 +394,11 @@ class TelegramBot {
   }
 
   async getChatMember(userid: number, chatid: number) {
+
+    if (userid == null || isNaN(userid)) {
+      logger.error("Invalid User ID: ID is null, undefined, or NaN");
+      return;
+    }
     let url = this.getUrl(`/getChatMember?chat_id=${chatid}&user_id=${userid}`);
 
     try {
@@ -402,7 +408,7 @@ class TelegramBot {
       }
     } catch (error: any) {
 
-      console.error("error -->", error?.response?.data?.description);
+      logger.error(error?.response?.data?.description);
     }
   }
   // ban and unban`
