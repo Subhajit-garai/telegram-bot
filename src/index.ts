@@ -26,7 +26,15 @@ bot.on("/start", async (update) => {
   await bot.sendMessage(
     chatId,
     `Welcome to the exambuddys !! \n
-     Type /sendMyId to get your telegram id.`
+     Type /sendMyId to get your telegram id.
+     Type /help to get more info.
+     Type /quiz to start a quiz.
+     Type /schdule to get schdule of quiz.
+
+     ** Error Reporting **
+     Type !Error to report any error.
+     Type !Error 20 to report error with question number (20).
+     `
   );
 });
 

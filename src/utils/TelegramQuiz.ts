@@ -1,8 +1,8 @@
-import { webhook_type } from "@repo/types/botTypes.js";
+
 import prisma from "@repo/db/index.js";
 import { logger } from "./logger.js";
-import { RedisProvider } from "./radisProvider.js";
-const redis = RedisProvider.getInstance();
+import { TaskQueue } from "./radisProvider.js";
+const redis = TaskQueue.getInstance();
 
 
 

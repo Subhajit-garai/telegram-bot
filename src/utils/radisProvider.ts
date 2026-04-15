@@ -1,15 +1,63 @@
 import Redis from "ioredis";
 
-import { Task } from "@repo/types/taskTypes.js";
+import { Job, Task } from "@repo/types/taskTypes.js";
+import { logger } from "./logger.js";
 
-export class RedisProvider {
-  private static instance: RedisProvider;
+export class QuizJobQueue {
+  private static instance: QuizJobQueue;
+  private redisClient: Redis;
+  private queue: string = "telegramquiz_scheduled";
+
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = new QuizJobQueue();
+    }
+    return this.instance;
+  }
+
+  private constructor() {
+
+    this.redisClient = new Redis(process.env.REDIS_URL!);
+    this.redisClient.on("error", (err) =>
+      console.log("Redis Client Error", err)
+    );
+
+  }
+
+  getclient(): Redis {
+    return this.redisClient;
+  }
+
+  push(data: Job, delayMs: number) {
+    if (!this.redisClient) logger.error(" redis not connected....");
+    let taskdata: string;
+    taskdata = JSON.stringify(data);
+    return this.redisClient.zadd(this.queue, delayMs, taskdata);
+  }
+
+  async pop(): Promise<Job | null> {
+    let res = await this.redisClient.zrangebyscore(this.queue, 0, Date.now());
+    if (!res) return null
+    let rawdata = res[1]
+    let data: Job = JSON.parse(rawdata as string);
+    return data;
+  }
+
+
+  async disconnect() {
+    await this.redisClient.quit();
+  }
+}
+
+
+export class TaskQueue {
+  private static instance: TaskQueue;
   private redisClient: Redis;
   private queue: string = "task";
 
   public static getInstance() {
     if (!this.instance) {
-      this.instance = new RedisProvider();
+      this.instance = new TaskQueue();
     }
     return this.instance;
   }
@@ -43,25 +91,6 @@ export class RedisProvider {
     return null;
   }
 
-  set(id: string, data: any) {
-    let taskdata: string;
-    taskdata = JSON.stringify(data);
-    this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "XX", (err, success) => {
-      if (err) {
-        console.error("Redis SETXX Error:", err);
-      }
-
-      if (!success) {
-        this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "NX")
-      }
-    })
-
-  }
-
-  async get(id: string) {
-    const question = await this.redisClient.get(`question:${id}`);
-    return question ? JSON.parse(question) : null;
-  }
 
   async disconnect() {
     await this.redisClient.quit();

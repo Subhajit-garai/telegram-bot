@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import TelegramBot from "../utils/Telegrambot.js";
 import { TelegramUpdate } from "../types/index.js";
 
@@ -28,8 +28,8 @@ class QuizManager {
     this.quizInfo.clear();
   }
 
-  reportQuestionError() { }
-  CheckQuestion() { }
+  reportQuestionError(number?: number) { }
+  CheckQuestion(number?: number) { }
 
 
 
@@ -149,6 +149,7 @@ class QuizManager {
       let { title, options, ans, explanation, id, extra, format } =
         question;
       let ansid = parseInt(ans[0]) - 1;
+      let question_time = i * nextQuestionTime * 1000;
       setTimeout(
         async () => {
           switch (format) {
@@ -197,15 +198,16 @@ class QuizManager {
             // console.log("quiz info", this.quizInfo);
           }
         },
-        i * nextQuestionTime * 1000
+        question_time
       );
     });
 
+    let Leaderboard_time = total_questions * nextQuestionTime * 1000 + 2 * quizOpenFor * 1000
     setTimeout(
       () => {
         this.showleaderBoard(quiz_id, chatid, thread_id);
       },
-      total_questions * nextQuestionTime * 1000 + 2 * quizOpenFor * 1000
+      Leaderboard_time
     );
   };
 
