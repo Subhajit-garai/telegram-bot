@@ -2,7 +2,7 @@
 FROM node:lts-alpine AS builder
 WORKDIR /build
 COPY package*.json tsconfig.json  ./
-RUN npm install 
+RUN npm ci
 COPY .  .
 RUN npm run build
 
@@ -13,5 +13,5 @@ COPY  package*.json .
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./dist
 
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "npm run start"]
 
