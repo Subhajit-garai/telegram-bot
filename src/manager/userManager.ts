@@ -7,7 +7,7 @@ import timezone from "dayjs/plugin/timezone.js";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { logDate, logger } from "../utils/logger.js";
 import { BotService } from "@/services/bot.service.js";
-import { primeStatus } from "@repo/prisma/enums.js";
+import { primeStatus } from "../db/schema/enums.js";
 
 
 dayjs.extend(customParseFormat);
@@ -146,7 +146,7 @@ class UserManager {
       let data: User_type = {
         id: user.social[0].link,
         expiry: user?.prime?.expiry ?? new Date(),
-        primeStaus: user?.prime?.status ?? primeStatus.None,
+        primeStaus: user?.prime?.status ?? "None",
       };
       this.addUser(user.social[0].link, data);
     }

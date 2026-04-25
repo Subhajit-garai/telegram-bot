@@ -1,6 +1,4 @@
 
-import prisma from "@repo/db/index.js";
-import { logger } from "./logger.js";
 import { TaskQueue } from "./radisProvider.js";
 const redis = TaskQueue.getInstance();
 

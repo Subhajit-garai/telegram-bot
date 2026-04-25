@@ -16,10 +16,7 @@
       ],
       "@repo/db/*": [
         "./src/db/*"
-      ],
-      "@repo/prisma/*": [
-        "./prisma/generated/prisma/*"
-      ] //
+      ]
     },
     "rootDir": "." /* Specify the root folder within your source files. */,
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
@@ -28,13 +25,15 @@
     "target": "ES2023",
     "strict": true,
     "esModuleInterop": true,
-    "incremental": true
+    "incremental": true,
+    "skipLibCheck": true
   },
   "exclude": [
     "node_modules",
     "dist",
     "build",
     "coverage",
+    "drizzle",
     "**/*.test.ts"
   ]
 }

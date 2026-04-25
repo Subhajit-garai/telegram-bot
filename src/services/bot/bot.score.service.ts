@@ -1,4 +1,4 @@
-import prisma from "@repo/db/index.js";
+import { db, schema } from "@repo/db/index.js";
 
 
 export class BotScoreService {

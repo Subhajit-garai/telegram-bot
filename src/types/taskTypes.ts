@@ -1,6 +1,6 @@
 import {
   ExamType,
-} from "@repo/prisma/client.js";
+} from "../db/schema/enums.js";
 
 export type ExamCategory = "JECA" | "GATE";
 
