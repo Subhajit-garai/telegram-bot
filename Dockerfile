@@ -1,17 +1,38 @@
-
+# --- Build Stage ---
 FROM node:lts-alpine AS builder
-WORKDIR /build
-COPY package*.json tsconfig.json  ./
+
+WORKDIR /usr/src/app
+
+# Copy package files for dependency installation
+COPY package.json package-lock.json ./
+
+# Install all dependencies (including devDependencies for building)
 RUN npm ci
-COPY .  .
+
+# Copy the rest of the application source code
+COPY . .
+
+# Build the application (runs tsc && tsc-alias as per package.json)
 RUN npm run build
 
-FROM  node:lts-alpine
-ENV NODE_ENV production
-WORKDIR /app
-COPY  package*.json .
-COPY --from=builder /build/node_modules ./node_modules
-COPY --from=builder /build/dist ./dist
+# --- Production Stage ---
+FROM node:lts-alpine
 
-CMD ["sh", "-c", "npm run start"]
+WORKDIR /usr/src/app
 
+# Set environment to production
+ENV NODE_ENV=production
+
+# Copy package files for production dependency installation
+COPY package.json package-lock.json ./
+
+# Install only production dependencies to keep the image slim
+RUN npm ci --omit=dev
+
+# Copy the compiled code from the builder stage
+# We only copy 'dist/src' as 'seeds', 'tsconfig.tsbuildinfo', and 'drizzle.config.js' are not needed in production.
+COPY --from=builder /usr/src/app/dist/src ./dist/src
+
+# Start the application
+# We use node directly for better signal handling (SIGTERM, etc.)
+CMD ["node", "dist/src/index.js"]

@@ -42,14 +42,13 @@ class UserManager {
   private static instance: UserManager;
   botService: BotService;
   bot: TelegramBot;
-  refreshtime: number = parseInt(process.env.REFRESH_TIME?.trim()!) ?? 60; // in minutes
+  refreshtime: number = parseInt(process.env.REFRESH_TIME!.trim()) || 60; // in minutes
 
   private constructor() {
     this.botService = new BotService();
     this.bot = TelegramBot.getInstance();
     this.init();
     this.refreshUserdataList();
-    // this.refreshtime = parseInt(process.env.REFRESH_TIME!) ;
     console.log(
       "UserManager initialized with refresh time:",
       this.refreshtime,
@@ -152,36 +151,23 @@ class UserManager {
     if (!users) throw Error("chat ids not found");
 
     users.map((user) => {
-
       if (user.social.length < 1) {
-        logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
-        return
+        logger.error("telegram data not found or not updated");
+        return;
+      } else {
+        user.social.map((s) => {
+          if (s.platform === "telegram") {
+            let id = s.link;
+            let data: User_type = {
+              id,
+              expiry: user?.prime?.expiry ?? new Date(),
+              primeStaus: user?.prime?.status ?? "None",
+            };
+            this.addUser(id, data);
+          }
+        });
       }
-
-
-      users.map((user) => {
-        if (user.social.length < 1) {
-          logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
-          return
-        } else {
-          user.social.map((s) => {
-            if (s.platform === "telegram") {
-              let id = s.link;
-              let data: User_type = {
-                id,
-                expiry: user?.prime?.expiry ?? new Date(),
-                primeStaus: user?.prime?.status ?? "None",
-              };
-              this.addUser(user.social[0].link, data);
-            }
-          })
-        }
-      });
-
-
-
-    }
-    )
+    });
     console.log(this.users);
     return true;
   }
