@@ -126,14 +126,23 @@ class UserManager {
 
     if (!responce) throw Error("chat ids not found");
 
+
+
+
     if (Array.isArray(responce) && responce.length > 0) {
       logger.info("adding admin user to local db .....");
       responce.map((user) => {
-        if (user.social.length < 1 || user.social[0].platform !== "telegram") {
+        if (user.social.length < 1) {
           logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
           return
+        } else {
+          user.social.map((s) => {
+            if (s.platform === "telegram") {
+              let id = parseInt(s.link);
+              this.admin.push(id);
+            }
+          })
         }
-        this.admin.push(parseInt(user.social[0].link));
       });
     }
   }
@@ -143,14 +152,37 @@ class UserManager {
     if (!users) throw Error("chat ids not found");
 
     users.map((user) => {
-      let data: User_type = {
-        id: user.social[0].link,
-        expiry: user?.prime?.expiry ?? new Date(),
-        primeStaus: user?.prime?.status ?? "None",
-      };
-      this.addUser(user.social[0].link, data);
+
+      if (user.social.length < 1) {
+        logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
+        return
+      }
+
+
+      users.map((user) => {
+        if (user.social.length < 1) {
+          logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
+          return
+        } else {
+          user.social.map((s) => {
+            if (s.platform === "telegram") {
+              let id = s.link;
+              let data: User_type = {
+                id,
+                expiry: user?.prime?.expiry ?? new Date(),
+                primeStaus: user?.prime?.status ?? "None",
+              };
+              this.addUser(user.social[0].link, data);
+            }
+          })
+        }
+      });
+
+
+
     }
     )
+    console.log(this.users);
     return true;
   }
 

@@ -81,11 +81,7 @@ export class BotTelegramService {
             },
         });
 
-        // Mapping to match Prisma select structure if needed, or adjusting the rest of the app
-        // The original Prisma code was:
-        // select: { social: { where: { platform: telegram } }, prime: { select: { status: true } } }
-        // Drizzle findMany returns everything by default unless select is specified.
-        
+
         return users.map(user => ({
             social: user.socials,
             prime: user.prime ? { status: user.prime.status } : null
@@ -151,7 +147,7 @@ export class BotTelegramService {
         });
 
         if (!users) throw new Error("No users found");
-        
+
         return users.map(user => ({
             social: user.socials.map(s => ({ platform: s.platform, link: s.link })),
             prime: user.prime ? { status: user.prime.status, expiry: user.prime.expiry } : null,
