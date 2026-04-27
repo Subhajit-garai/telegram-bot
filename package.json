@@ -17,6 +17,7 @@
   "dependencies": {
     "@types/pg": "^8.20.0",
     "axios": "^1.8.4",
+    "bullmq": "^5.76.2",
     "cuid": "^3.0.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",

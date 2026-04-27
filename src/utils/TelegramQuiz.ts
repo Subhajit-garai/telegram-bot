@@ -1,6 +1,6 @@
 
-import { TaskQueue } from "./radisProvider.js";
-const redis = TaskQueue.getInstance();
+import { QueueManager } from "@/queue/queueManager.js";
+const queueManager = QueueManager.getInstance();
 
 
 
@@ -16,7 +16,10 @@ export const QuizeSetupFunction = async (
 
   const cbUrl = `${process.env.WEBHOOK_URL}/survertask`;
 
-  let Notifystatus = await redis.push({
+
+
+
+  let Notifystatus = await queueManager.push({
     type: "SEND_QUIZ_DATA",
     id: String(chat_id),
     payload: {
