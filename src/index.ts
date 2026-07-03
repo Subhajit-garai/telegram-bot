@@ -1,32 +1,18 @@
 import express from "express";
 import "dotenv/config";
-import TelegramBot from "./utils/Telegrambot.js";
 import QuizManager from "./manager/quizManager.js";
-import UserManager from "./manager/userManager.js";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
-import { Conversation } from "./manager/conversationSession.js";
-import "./conversation/feedback.js";
 import { logger } from "./utils/logger.js";
 import { QuizeSetupFunction } from "./utils/TelegramQuiz.js";
 
-import {
-  IPlatformAdaptor,
-  Bot,
-  Context,
-  NormalizedContext,
-} from "@subhajit60/bot";
+import { Bot, Context, NormalizedContext } from "@subhajit60/bot";
 import { TelegramAdaptor } from "./adapter/telegram.js";
 
 const PORT = process.env.PORT || 4444;
-const WEBHOOK_URL = `${process.env.WEBHOOK_URL}/webhook`;
-
 const app = express();
 app.use(express.json());
 
 export const quiz = new QuizManager();
-// export const bot = TelegramBot.getInstance();
-export const um = UserManager.getInstance();
-export const conv = Conversation.getInstance();
 
 const telegramAdaptor = new TelegramAdaptor();
 const bot = new Bot(telegramAdaptor);
@@ -48,15 +34,13 @@ bot.messagehandler.on("/start", async (ctx) => {
   );
 });
 
-// bot.messagehandler.on("/sendchatid", isAdmin, async (ctx) => {
-bot.messagehandler.on("/sendchatid", async (ctx) => {
+bot.messagehandler.on("/sendchatid", isAdmin, async (ctx) => {
   ctx.reply(`chat id is : ->${ctx.update.chatId}`);
 });
-// bot.messagehandler.on("/sendthreadid", isAdmin, async (update) => {
-//   let userid = update.message.from.id;
-//   let thread_id = update.message.message_thread_id;
-//   await bot.sendMessage(userid, `thread id is : ->${thread_id}`);
-// });
+bot.messagehandler.on("/sendthreadid", isAdmin, async (ctx) => {
+  let thread_id = ctx.update.raw?.message_thread_id;
+  ctx.reply(`thread id is : ->${thread_id}`);
+});
 
 // bot.setPollHandler(quiz.handle_poll_answer);
 
@@ -64,9 +48,7 @@ bot.messagehandler.on("/sendMyId", async (ctx) => {
   ctx.reply(`your id is : ->${ctx.update.userId}`);
 });
 
-// bot.messagehandler.on("/quiz", isGroupValid, isAdmin, async (ctx) => {
-// bot.messagehandler.on("/quiz", isGroupValid, isAdmin, async (ctx) => {
-bot.messagehandler.on("/quiz", async (ctx) => {
+bot.messagehandler.on("/quiz", isGroupValid, isAdmin, async (ctx) => {
   logger.success("starting new quiz ...");
 
   await QuizeSetupFunction(
@@ -78,15 +60,6 @@ bot.messagehandler.on("/quiz", async (ctx) => {
   );
 });
 
-// need some security and authentication
-// old
-// app.post("/webhook", async (req, res) => {
-//   res.sendStatus(200);
-//   console.log(req.body);
-
-//   await bot.handleUpdate(req.body);
-// });
-
 app.post("/survertask", async (req, res) => {
   let data = req.body;
   switch (data.type) {
@@ -96,7 +69,7 @@ app.post("/survertask", async (req, res) => {
     case "unbanuser":
       {
         console.log("unban user request", data);
-        await um.unbanUsertask(data.user_id);
+        // await um.unbanUsertask(data.user_id);
       }
       break;
     case "cleaupcache":
@@ -104,7 +77,7 @@ app.post("/survertask", async (req, res) => {
         console.log("cleaup cache request..", data);
 
         quiz.clearcache();
-        um.clearcache();
+        // um.clearcache();
 
         console.log("cleaup cache done ..");
       }
@@ -123,10 +96,14 @@ bot
       res.sendStatus(200);
       console.log(req.body);
 
+      // here check user is admin , from user manager .
+      //  if no entry  then add user record .
+
       let ctx: NormalizedContext = {
         platform: telegramAdaptor.getPlatformName(),
         userId: req.body.message.from.id,
         chatId: req.body.message.chat.id,
+        role: req.body.message.role || "User",
         text: req.body.message.text,
         type: req.body.message.text,
         raw: req.body.message,

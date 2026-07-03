@@ -1,7 +1,5 @@
 import axios from "axios";
 import { Middleware, TelegramUpdate } from "../types/index.js";
-import { AproveUserTojoin, isAdmin } from "../middlewere/userAuth.js";
-import { Conversation } from "../manager/conversationSession.js";
 
 import { logger } from "./logger.js";
 
@@ -21,8 +19,6 @@ class TelegramBot {
   private pollHandler: (pollAnswer: TelegramUpdate) => Promise<void> =
     async () => {};
 
-  Conversation: Conversation;
-
   private constructor() {
     this.token = process.env.BOT_TOKEN?.trim()!;
     this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN?.trim()!;
@@ -33,7 +29,6 @@ class TelegramBot {
     this.apiUrl = `https://api.telegram.org/bot${this.token}`;
     this.commands = new Map();
     this.correctAnswers = new Map();
-    this.Conversation = Conversation.getInstance();
     // Initialize webhook asynchronously
     this.init();
   }
@@ -122,7 +117,7 @@ class TelegramBot {
         // conversation  removed
       }
     } else if (update?.chat_join_request) {
-      AproveUserTojoin(update);
+      // AproveUserTojoin(update);
     } else if (update?.poll_answer) {
       console.log(
         "Poll answer received for user :---->",
