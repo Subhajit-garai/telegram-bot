@@ -1,4 +1,3 @@
-
 import dayjs from "dayjs";
 import TelegramBot from "../utils/Telegrambot.js";
 
@@ -8,7 +7,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { logDate, logger } from "../utils/logger.js";
 import { BotService } from "@/services/bot.service.js";
 import { primeStatus } from "../db/schema/enums.js";
-
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -32,8 +30,6 @@ export type validChatids_type = {
   [key: string]: validChatid_type;
 };
 
-
-
 class UserManager {
   private users: Users_type = {};
   private admin: number[] = [];
@@ -52,7 +48,7 @@ class UserManager {
     console.log(
       "UserManager initialized with refresh time:",
       this.refreshtime,
-      "minutes"
+      "minutes",
     );
   }
   private refreshUserdataList() {
@@ -84,6 +80,7 @@ class UserManager {
   private async init() {
     logger.info("init ....");
 
+    return;
     let isSucess = await this.getUserInfomationfromServer();
     let isAdminSuccess = await this.getAdmins();
     await this.getValidChatidsInfoFromServer();
@@ -97,8 +94,6 @@ class UserManager {
 
     return false;
   }
-
-
 
   addUser(id: string, data: User_type): void {
     this.users[id] = data;
@@ -125,22 +120,19 @@ class UserManager {
 
     if (!responce) throw Error("chat ids not found");
 
-
-
-
     if (Array.isArray(responce) && responce.length > 0) {
       logger.info("adding admin user to local db .....");
       responce.map((user) => {
         if (user.social.length < 1) {
           logger.error("telegram data not found or not updated"); //send notification to user to add telegram id
-          return
+          return;
         } else {
           user.social.map((s) => {
             if (s.platform === "telegram") {
               let id = parseInt(s.link);
               this.admin.push(id);
             }
-          })
+          });
         }
       });
     }
@@ -195,7 +187,7 @@ class UserManager {
         } else {
           console.log(
             " group is not premium so no need to check user prime status. --->",
-            id
+            id,
           );
         }
       });
@@ -206,7 +198,9 @@ class UserManager {
   }
 
   async isGroupOnline(chat_id: number): Promise<boolean> {
-    let isgroupjoinable = await this.botService.telegram.isGroupJoinable(String(chat_id));
+    let isgroupjoinable = await this.botService.telegram.isGroupJoinable(
+      String(chat_id),
+    );
 
     if (isgroupjoinable) {
       return true;
@@ -217,7 +211,7 @@ class UserManager {
 
   async isUserAccessableToJoin(
     user_id: number,
-    chat_id: number
+    chat_id: number,
   ): Promise<{ success: boolean; message: string }> {
     let isprime = await this.botService.telegram.isPrimeUser(String(user_id));
 
@@ -230,7 +224,6 @@ class UserManager {
         "You don't have any subscription. Please purchase at least a basic subscription to use this service.",
     };
   }
-
 
   async checkUserPrimeStatus(user_id: number): Promise<boolean> {
     let user = this.getUser(user_id.toString());
@@ -259,17 +252,17 @@ class UserManager {
           } else {
             let isuserExistsInChat = await this.bot.getChatMember(
               parseInt(userId),
-              chat_id
+              chat_id,
             );
             if (isuserExistsInChat && isuserExistsInChat.status === "member") {
               // send them a message to renew their subscription
               await this.bot.sendMessangerBotMessage(
                 parseInt(userId),
-                "Your Prime subscription has expired. Please renew your subscription to continue using the service."
+                "Your Prime subscription has expired. Please renew your subscription to continue using the service.",
               );
               let isbanSuccess = await this.bot.banUser(
                 parseInt(userId),
-                chat_id
+                chat_id,
               );
               if (isbanSuccess && isbanSuccess.result) {
                 // console.log("user is banned successfully");
@@ -283,7 +276,7 @@ class UserManager {
               }
             } else {
               console.log(
-                `user ${userId} is not a member of the chat ${chat_id}, so no need to ban them.`
+                `user ${userId} is not a member of the chat ${chat_id}, so no need to ban them.`,
               );
             }
           }
@@ -296,7 +289,7 @@ class UserManager {
 
   async unbanUsertask(
     user_id: number,
-    chat_id: number | undefined = undefined
+    chat_id: number | undefined = undefined,
   ) {
     try {
       if (!chat_id) {
@@ -310,7 +303,7 @@ class UserManager {
         if (status && status.result) {
           await this.bot.sendMessangerBotMessage(
             user_id,
-            "you can join the group again."
+            "you can join the group again.",
           );
           await this.botService.telegram.processNotification("unbanuser", {
             user_id: String(user_id),

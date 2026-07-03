@@ -19,7 +19,7 @@ class TelegramBot {
   private correctAnswers: Map<number, number>; // Store correct answers
   private static instance: TelegramBot | null = null;
   private pollHandler: (pollAnswer: TelegramUpdate) => Promise<void> =
-    async () => { };
+    async () => {};
 
   Conversation: Conversation;
 
@@ -27,7 +27,9 @@ class TelegramBot {
     this.token = process.env.BOT_TOKEN?.trim()!;
     this.MESSANGER_BOT_TOKEN = process.env.MESSANGER_BOT_TOKEN?.trim()!;
     this.AI_MENTOR_BOT_TOKEN = process.env.AI_MENTOR_BOT_TOKEN?.trim()!;
+
     this.WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
+
     this.apiUrl = `https://api.telegram.org/bot${this.token}`;
     this.commands = new Map();
     this.correctAnswers = new Map();
@@ -35,7 +37,6 @@ class TelegramBot {
     // Initialize webhook asynchronously
     this.init();
   }
-
 
   // Get the singleton instance
   public static getInstance(): TelegramBot {
@@ -94,7 +95,7 @@ class TelegramBot {
     } catch (error: any) {
       console.error(
         "Error checking admin status:",
-        error.response?.data || error
+        error.response?.data || error,
       );
       return false;
     }
@@ -107,10 +108,9 @@ class TelegramBot {
     // const chatId = update.message.chat.id;
     const userId = update?.message?.from?.id;
     const text = update?.message?.text?.trim();
-    const [command, ...args] = (text?.split(" ") ?? [])
+    const [command, ...args] = text?.split(" ") ?? [];
     update.command = command;
     update.args = args;
-
 
     if (update.message) {
       // const session = this.Conversation.userSessions.get(userId)!; // getting session info
@@ -127,9 +127,9 @@ class TelegramBot {
       console.log(
         "Poll answer received for user :---->",
         update.poll_answer?.user?.first_name +
-        "(" +
-        update.poll_answer?.user?.id +
-        ")"
+          "(" +
+          update.poll_answer?.user?.id +
+          ")",
       );
 
       this.pollHandler(update);
@@ -194,7 +194,7 @@ class TelegramBot {
     chatId: number,
     text: string,
     type: "HTML" | "TEXT" = "TEXT",
-    thread_id: number | undefined = undefined
+    thread_id: number | undefined = undefined,
   ) {
     let MESSANGER_BOT_API_URL = `https://api.telegram.org/bot${this.AI_MENTOR_BOT_TOKEN}/sendMessage`;
     try {
@@ -235,7 +235,7 @@ class TelegramBot {
     chatId: number,
     text: string,
     type: "HTML" | "TEXT" = "TEXT",
-    thread_id: number | undefined = undefined
+    thread_id: number | undefined = undefined,
   ) {
     let MESSANGER_BOT_API_URL = `https://api.telegram.org/bot${this.MESSANGER_BOT_TOKEN}/sendMessage`;
     try {
@@ -275,7 +275,7 @@ class TelegramBot {
     chatId: number,
     text: string,
     type: "HTML" | "TEXT" = "TEXT",
-    thread_id: number | undefined = undefined
+    thread_id: number | undefined = undefined,
   ) {
     try {
       let url = `${this.apiUrl}/sendMessage`;
@@ -315,7 +315,7 @@ class TelegramBot {
     chatId: number,
     messageId: number,
     newText: string,
-    thread_id: number | undefined = undefined
+    thread_id: number | undefined = undefined,
   ) {
     let url = this.getUrl("/editMessageText");
     const payload = {
@@ -345,7 +345,7 @@ class TelegramBot {
 
     allows_multiple_answers: boolean = false,
     quizOpenFor = 40, // 40 seconds
-    thread_id: number | undefined = undefined
+    thread_id: number | undefined = undefined,
   ) {
     try {
       let response = await axios.post(this.getUrl("/sendPoll"), {
@@ -366,7 +366,7 @@ class TelegramBot {
       console.error("Error sending message:", error.response?.data);
       this.sendMessage(
         chatId,
-        `${number} Error:-> Content length has exceeded the maximum allowed characters.`
+        `${number} Error:-> Content length has exceeded the maximum allowed characters.`,
       );
     }
   }
@@ -381,7 +381,8 @@ class TelegramBot {
         return;
       }
       const data = res.data;
-      if (data.result && data.result.url === url) {  // can be here
+      if (data.result && data.result.url === url) {
+        // can be here
         console.log("Webhook is already set correctly.");
         return;
       }
@@ -394,7 +395,6 @@ class TelegramBot {
   }
 
   async getChatMember(userid: number, chatid: number) {
-
     if (userid == null || isNaN(userid)) {
       logger.error("Invalid User ID: ID is null, undefined, or NaN");
       return;
@@ -407,7 +407,6 @@ class TelegramBot {
         return responce.data.result;
       }
     } catch (error: any) {
-
       logger.error(error?.response?.data?.description);
     }
   }
@@ -425,7 +424,7 @@ class TelegramBot {
 
   async UnbanUser(userid: number, chatid: number) {
     let url = this.getUrl(
-      `/unbanChatMember?chat_id=${chatid}&user_id=${userid}`
+      `/unbanChatMember?chat_id=${chatid}&user_id=${userid}`,
     );
     let responce = await axios.post(url);
     if (responce.status === 200) {
@@ -441,7 +440,7 @@ class TelegramBot {
 
   async aproveJoinRequest(chatid: number, userId: number) {
     let url = this.getUrl(
-      `/approveChatJoinRequest?chat_id=${chatid}&user_id=${userId}`
+      `/approveChatJoinRequest?chat_id=${chatid}&user_id=${userId}`,
     );
     let responce = await axios.post(url);
     if (responce.status === 200) {
@@ -450,7 +449,7 @@ class TelegramBot {
   }
   async rejectJoinRequest(chatid: number, userId: number) {
     let url = this.getUrl(
-      `/rejectChatJoinRequest?chat_id=${chatid}&user_id=${userId}`
+      `/rejectChatJoinRequest?chat_id=${chatid}&user_id=${userId}`,
     );
     let responce = await axios.post(url);
     if (responce.status === 200) {

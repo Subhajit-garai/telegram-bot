@@ -1,15 +1,17 @@
-import axios from "axios";
 import { Middleware, TelegramUpdate } from "../types/index.js";
-import { bot, um } from "../index.js";
+import { um } from "../index.js";
+
+import TelegramBot from "../utils/Telegrambot.js";
+
+let bot = TelegramBot.getInstance();
 
 export const isGroupValid: Middleware = async (
   update: TelegramUpdate,
-  next
+  next,
 ) => {
   let ChatType = update.message.chat.type;
   let chatId = update.message.chat.id;
-  
-  
+
   switch (ChatType) {
     case "group":
       {
@@ -19,7 +21,7 @@ export const isGroupValid: Middleware = async (
         } else {
           await bot.sendMessage(
             chatId,
-            "❌ This group is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information."
+            "❌ This group is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information.",
           );
         }
       }
@@ -32,7 +34,7 @@ export const isGroupValid: Middleware = async (
         } else {
           await bot.sendMessage(
             chatId,
-            "❌ This group is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information."
+            "❌ This group is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information.",
           );
         }
       }
@@ -40,19 +42,17 @@ export const isGroupValid: Middleware = async (
     case "channel":
       await bot.sendMessage(
         chatId,
-        "❌ This channel is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information."
+        "❌ This channel is not registered with the bot. Please register it first. Contact the @exambuddys admins for more information.",
       );
       break;
 
-    default:  await next(); // user --> "private"
+    default:
+      await next(); // user --> "private"
       break;
   }
 };
 
-
-
-
-export const isAdmin: Middleware = async (update: TelegramUpdate , next) => {
+export const isAdmin: Middleware = async (update: TelegramUpdate, next) => {
   let chatId = update.message.chat.id;
   let userId = update.message.from.id;
   let ChatType = update.message.chat.type;
@@ -65,12 +65,12 @@ export const isAdmin: Middleware = async (update: TelegramUpdate , next) => {
   if (isAdmin || isGroupAdmin) {
     // console.log("isAdmin" ,isAdmin);
     // console.log("isGroupAdmin" ,isGroupAdmin);
-    
+
     await next(); // Continue if admin
   } else {
     await bot.sendMessage(
       chatId,
-      "❌ You must be an admin to use this command."
+      "❌ You must be an admin to use this command.",
     );
   }
 };
@@ -85,7 +85,7 @@ export const AproveUserTojoin = async (update: TelegramUpdate) => {
     if (!(await um.isGroupOnline(chatId))) {
       await bot.sendMessage(
         userId,
-        `❌ Sorry, you are not allowed to join this group.`
+        `❌ Sorry, you are not allowed to join this group.`,
       );
       return;
     }
@@ -93,7 +93,7 @@ export const AproveUserTojoin = async (update: TelegramUpdate) => {
     // user is prime
     let userIsaccessableToJoin = await um.isUserAccessableToJoin(
       userId,
-      chatId
+      chatId,
     );
 
     if (!userIsaccessableToJoin.success) {
@@ -115,7 +115,7 @@ export const AproveUserTojoin = async (update: TelegramUpdate) => {
 
       await bot.sendMessage(
         userId,
-        `❌ Sorry, you are not allowed to join this group.`
+        `❌ Sorry, you are not allowed to join this group.`,
       );
     }
   }
