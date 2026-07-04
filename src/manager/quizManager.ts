@@ -3,6 +3,7 @@ import { quiz_info_type, quiz_user_answer_type } from "../types/quizTypes.js";
 import { randomInt } from "crypto";
 import { QueueManager } from "../queue/queueManager.js";
 import { BotService } from "../services/bot.service.js";
+import { logger } from "@/utils/logger.js";
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;

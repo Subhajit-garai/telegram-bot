@@ -1,9 +1,7 @@
 import express from "express";
 import "dotenv/config";
-import QuizManager from "./manager/quizManager.js";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
 import { logger } from "./utils/logger.js";
-
 import { Context, NormalizedContext } from "@subhajit60/bot";
 import { TelegramAdaptor } from "./adapter/telegram.js";
 import { initQueueWorker } from "./queue/queueWorker.js";
@@ -53,8 +51,7 @@ bot.messagehandler.on("/sendMyId", async (ctx) => {
 
 bot.messagehandler.on("/quiz", isGroupValid, async (ctx) => {
   logger.success("starting new quiz ...");
-  ctx.reply(`quiz started : wait for questions`);
-  bot.quizmanager.quiz(ctx.chatId);
+  await bot.quizmanager.quiz(ctx.chatId);
 });
 
 bot

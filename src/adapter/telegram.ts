@@ -34,7 +34,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
 
   // copy from telegram bot lib
 
-  private async init() {
+  async init() {
     await this.setWebhook(this.WEBHOOK_URL);
   }
 

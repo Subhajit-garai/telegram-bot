@@ -4,7 +4,10 @@ import { TelegramAdaptor } from "../adapter/telegram.js";
 import { logger } from "../utils/logger.js";
 import QuizManager from "@/manager/quizManager.js";
 
-export function initQueueWorker(telegramAdaptor: TelegramAdaptor, quiz: QuizManager) {
+export function initQueueWorker(
+  telegramAdaptor: TelegramAdaptor,
+  quiz: QuizManager,
+) {
   const queueManager = QueueManager.getInstance();
   const connection = queueManager.getclient();
 
@@ -102,11 +105,20 @@ export function initQueueWorker(telegramAdaptor: TelegramAdaptor, quiz: QuizMana
           case "CREATE_QUIZ":
             {
               logger.info(`[Queue] Starting quiz setup`);
-              const chatId = job.data.payload?.chatId || job.data.chatId || job.data.payload?.chatid || job.data.chatid || job.data.payload?.userid || job.data.userid;
+              const chatId =
+                job.data.payload?.chatId ||
+                job.data.chatId ||
+                job.data.payload?.chatid ||
+                job.data.chatid ||
+                job.data.payload?.userid ||
+                job.data.userid;
               if (chatId) {
                 await quiz.quiz(String(chatId));
               } else {
-                logger.error(`[Queue] Missing chatId in CREATE_QUIZ job:`, job.data);
+                logger.error(
+                  `[Queue] Missing chatId in CREATE_QUIZ job:`,
+                  job.data,
+                );
               }
             }
             break;
@@ -124,7 +136,7 @@ export function initQueueWorker(telegramAdaptor: TelegramAdaptor, quiz: QuizMana
   );
 
   worker.on("completed", (job) => {
-    logger.info(`[Queue] Job ${job.id} completed successfully`);
+    logger.success(`[Queue] Job ${job.id} completed successfully`);
   });
 
   worker.on("failed", (job, err) => {
