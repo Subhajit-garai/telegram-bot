@@ -1,14 +1,17 @@
 import { IPlatformAdaptor, NormalizedContext } from "@subhajit60/bot";
-import TelegramBot from "../utils/Telegrambot.js";
+// import TelegramBot from "../utils/Telegrambot.js";
 import axios from "axios";
 import { logger } from "@/utils/logger.js";
 
 export class TelegramAdaptor extends IPlatformAdaptor {
-  bot = TelegramBot.getInstance();
   token = process.env.BOT_TOKEN?.trim()!;
   WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
-
   apiUrl = `https://api.telegram.org/bot${this.token}`;
+
+  constructor() {
+    super();
+    this.init();
+  }
   getPlatformName(): string {
     return "Telegram";
   }
@@ -29,15 +32,6 @@ export class TelegramAdaptor extends IPlatformAdaptor {
     };
   }
 
-  //   sendMessage(message: string, id: string): void {
-  //     console.log(`Sending message to ${id}: ${message}`);
-  //     this.bot.sendMessage(parseInt(id), message);
-  //   }
-
-  //   sendPoll(poll: any, id: string): void {
-  //     console.log(`Sending poll to ${id}:`, poll);
-  //   }
-
   // copy from telegram bot lib
 
   private async init() {
@@ -48,7 +42,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
     return `${this.apiUrl}${path}`;
   }
 
-  isGroupAdmin = async (chatId: number, userId: number): Promise<boolean> => {
+  async isAdmin(chatId: string, userId: string): Promise<boolean> {
     try {
       const url = `https://api.telegram.org/bot${this.token}/getChatAdministrators`;
       const response = await axios.get(url, { params: { chat_id: chatId } });
@@ -65,7 +59,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
       );
       return false;
     }
-  };
+  }
 
   // isChatValid = async (update: TelegramUpdate) => {
   //   let ChatType = update.message.chat.type;
@@ -188,7 +182,6 @@ export class TelegramAdaptor extends IPlatformAdaptor {
       options: string[];
       ansid: number;
       explanation: string;
-
       allows_multiple_answers: boolean;
       quizOpenFor: number;
       thread_id: number | undefined;

@@ -3,19 +3,22 @@ import "dotenv/config";
 import QuizManager from "./manager/quizManager.js";
 import { isAdmin, isGroupValid } from "./middlewere/userAuth.js";
 import { logger } from "./utils/logger.js";
-import { QuizeSetupFunction } from "./utils/TelegramQuiz.js";
 
-import { Bot, Context, NormalizedContext } from "@subhajit60/bot";
+import { Context, NormalizedContext } from "@subhajit60/bot";
 import { TelegramAdaptor } from "./adapter/telegram.js";
+import { initQueueWorker } from "./queue/queueWorker.js";
+import { TelegramBot } from "./bot.js";
 
 const PORT = process.env.PORT || 4444;
 const app = express();
 app.use(express.json());
 
-export const quiz = new QuizManager();
-
 const telegramAdaptor = new TelegramAdaptor();
-const bot = new Bot(telegramAdaptor);
+
+const bot = new TelegramBot(telegramAdaptor);
+
+// Initialize the queue worker to process jobs from Redis
+initQueueWorker(telegramAdaptor, bot.quizmanager);
 
 // use bot lib
 
@@ -48,45 +51,10 @@ bot.messagehandler.on("/sendMyId", async (ctx) => {
   ctx.reply(`your id is : ->${ctx.update.userId}`);
 });
 
-bot.messagehandler.on("/quiz", isGroupValid, isAdmin, async (ctx) => {
+bot.messagehandler.on("/quiz", isGroupValid, async (ctx) => {
   logger.success("starting new quiz ...");
-
-  await QuizeSetupFunction(
-    String(ctx.update.userId),
-    String(ctx.update.chatId),
-    "quiz",
-    "TELEGRAM",
-    ctx.update.type,
-  );
-});
-
-app.post("/survertask", async (req, res) => {
-  let data = req.body;
-  switch (data.type) {
-    case "quizquestionset":
-      quiz.quiz(data);
-      break;
-    case "unbanuser":
-      {
-        console.log("unban user request", data);
-        // await um.unbanUsertask(data.user_id);
-      }
-      break;
-    case "cleaupcache":
-      {
-        console.log("cleaup cache request..", data);
-
-        quiz.clearcache();
-        // um.clearcache();
-
-        console.log("cleaup cache done ..");
-      }
-      break;
-    default:
-      res.sendStatus(400);
-      break;
-  }
-  res.sendStatus(200);
+  ctx.reply(`quiz started : wait for questions`);
+  bot.quizmanager.quiz(ctx.chatId);
 });
 
 bot

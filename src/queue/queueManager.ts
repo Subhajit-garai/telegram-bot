@@ -107,8 +107,8 @@ export class QueueManager<Q extends string = string> {
    * Legacy method maintained for backward compatibility
    * Pushes to the default "task" queue
    */
-  async push(data: Task) {
-    return this.addJob("task" as Q, data.type, data);
+  async push(data: Task, options?: JobsOptions) {
+    return this.addJob("task" as Q, data.type, data, options);
   }
 
   /**

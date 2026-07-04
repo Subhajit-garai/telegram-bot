@@ -8,12 +8,12 @@ export const isGroupValid: Middleware = async (
 ) => {
   const actualNext = typeof data === "function" ? data : next;
   let ChatType = ctx.update.raw?.chat?.type;
-  let chatId = parseInt(ctx.chatId);
+  let chatId = ctx.chatId;
+  let isValidChat = false;
 
   switch (ChatType) {
     case "group":
       {
-        let isValidChat = false;
         if (isValidChat) {
           if (actualNext) await actualNext(); // Continue if valid group
         } else {
@@ -25,7 +25,6 @@ export const isGroupValid: Middleware = async (
       break;
     case "supergroup":
       {
-        let isValidChat = false;
         if (isValidChat) {
           if (actualNext) await actualNext(); // Continue if valid group
         } else {
@@ -53,16 +52,12 @@ export const isAdmin: Middleware = async (
   next?: any,
 ) => {
   const actualNext = typeof data === "function" ? data : next;
-  let chatId = parseInt(ctx.chatId);
-  let userId = parseInt(ctx.userId);
   let ChatType = ctx.update.raw?.chat?.type;
   let isAdmin = false;
   let isGroupAdmin;
   ChatType == "private"
     ? (isGroupAdmin = false)
-    : // : (isGroupAdmin =
-      //     await ctx.platformInstance?.isGroupAdmin(chatId, userId));
-      false;
+    : (isGroupAdmin = await ctx.isAdmin());
 
   if (isAdmin || isGroupAdmin) {
     if (actualNext) await actualNext(); // Continue if admin

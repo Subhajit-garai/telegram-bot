@@ -1,17 +1,6 @@
-export type quizConfig_type = {
-  chatid: number;
-  thread_id: number;
-  userid: number;
-  topics: string[];
-  total_questions: number;
-  currentQuestionIndex: number;
-  nextQuestionTime: number;
-  quizOpenFor: number;
-};
-
 export type question_extra = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 export type quiz_question_type = {
   id: string;
   topic: string;
@@ -20,13 +9,7 @@ export type quiz_question_type = {
   options: string[];
   explanation: string;
   ans: string[];
-  extra: question_extra,
-};
-
-export type quizConfig_data_type = {
-  type: string;
-  questions: quiz_question_type[];
-  config: quizConfig_type;
+  extra: question_extra;
 };
 
 export type quiz_info_type = {
