@@ -6,13 +6,13 @@ import { Context, NormalizedContext } from "@subhajit60/bot";
 import { TelegramAdaptor } from "./adapter/telegram.js";
 import { initQueueWorker } from "./queue/queueWorker.js";
 import { TelegramBot } from "./bot.js";
+import { agent } from "./agent/index.js";
 
 const PORT = process.env.PORT || 4444;
 const app = express();
 app.use(express.json());
 
 const telegramAdaptor = new TelegramAdaptor();
-
 const bot = new TelegramBot(telegramAdaptor);
 
 // Initialize the queue worker to process jobs from Redis
@@ -43,6 +43,12 @@ bot.messagehandler.on("/sendthreadid", isAdmin, async (ctx) => {
   ctx.reply(`thread id is : ->${thread_id}`);
 });
 
+bot.messagehandler.on("/question", async (ctx) => {
+  // let res: string = "--> ans";
+  let res = await agent.run("who is pm of india?");
+  logger.success(res);
+  ctx.reply(res);
+});
 // bot.setPollHandler(quiz.handle_poll_answer);
 
 bot.messagehandler.on("/sendMyId", async (ctx) => {
@@ -59,7 +65,7 @@ bot
   .then(() => {
     app.post("/webhook", async (req, res) => {
       res.sendStatus(200);
-      console.log(req.body);
+      // console.log(req.body);
 
       // here check user is admin , from user manager .
       //  if no entry  then add user record .
