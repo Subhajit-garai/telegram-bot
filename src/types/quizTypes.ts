@@ -25,7 +25,7 @@ export type quiz_user_answer_type = {
   // [quiz_id:string]: {
   [user_id: number]: {
     first_name: string;
-    username: string;
+    username?: string;
     score: number;
     attemp: number;
     notattemp: number;

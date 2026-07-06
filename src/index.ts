@@ -34,7 +34,6 @@ bot.messagehandler.on("/start", async (ctx) => {
      `,
   );
 });
-
 bot.messagehandler.on("/sendchatid", isAdmin, async (ctx) => {
   ctx.reply(`chat id is : ->${ctx.update.chatId}`);
 });
@@ -44,12 +43,16 @@ bot.messagehandler.on("/sendthreadid", isAdmin, async (ctx) => {
 });
 
 bot.messagehandler.on("/question", async (ctx) => {
-  // let res: string = "--> ans";
-  let res = await agent.run("who is pm of india?");
+  let res = ctx;
+  // let res = await agent.run("who is pm of india?");
+
   logger.success(res);
-  ctx.reply(res);
+  ctx.reply(res.text);
 });
 // bot.setPollHandler(quiz.handle_poll_answer);
+
+bot.messagehandler.on("!question", async (ctx) => {});
+bot.messagehandler.on("question", async (ctx) => {});
 
 bot.messagehandler.on("/sendMyId", async (ctx) => {
   ctx.reply(`your id is : ->${ctx.update.userId}`);
@@ -66,20 +69,73 @@ bot
     app.post("/webhook", async (req, res) => {
       res.sendStatus(200);
       // console.log(req.body);
+      let ctx: NormalizedContext | undefined;
 
-      // here check user is admin , from user manager .
-      //  if no entry  then add user record .
+      let update = req.body;
 
-      let ctx: NormalizedContext = {
-        platform: telegramAdaptor.getPlatformName(),
-        userId: req.body.message.from.id,
-        chatId: req.body.message.chat.id,
-        role: req.body.message.role || "User",
-        text: req.body.message.text,
-        type: req.body.message.text,
-        raw: req.body.message,
-      };
+      if (update.message) {
+        // const session = this.Conversation.userSessions.get(userId)!; // getting session info
 
+        const { command, args, messageType } =
+          bot.messagehandler.messageExtractor(update?.message?.text);
+
+        ctx = {
+          platform: telegramAdaptor.getPlatformName(),
+          userId: update.message.from.id,
+          chatId: update.message.chat.id,
+          role: update.message.role || "User",
+          command: command,
+          args: args,
+          text: update?.message?.text,
+          type: messageType,
+          raw: update.message,
+        };
+      }
+      // else if (update?.chat_join_request) {
+      //   // AproveUserTojoin(update);
+      // }
+      else if (update?.poll_answer) {
+        console.log(
+          "Poll answer received for user :---->",
+          update.poll_answer?.user?.first_name +
+            "(" +
+            update.poll_answer?.user?.id +
+            ")",
+        );
+        const { command, args, messageType } =
+          bot.messagehandler.messageExtractor(update?.message?.text);
+
+        ctx = {
+          platform: telegramAdaptor.getPlatformName(),
+          userId: update.message.from.id,
+          chatId: update.message.chat.id,
+          role: update.message.role || "User",
+          command: command,
+          args: args,
+          text: update?.message?.text,
+          type: "poll",
+          raw: update.message,
+        };
+
+        bot.quizmanager.handle_poll_answer(update);
+      } else if (update?.new_chat_members) {
+        const { command, args, messageType } =
+          bot.messagehandler.messageExtractor(update?.message?.text);
+
+        ctx = {
+          platform: telegramAdaptor.getPlatformName(),
+          userId: update.message.from.id,
+          chatId: update.message.chat.id,
+          role: update.message.role || "User",
+          command: command,
+          args: args,
+          text: update?.message?.text,
+          type: "new_member",
+          raw: update.message,
+        };
+      }
+
+      if (!ctx) throw Error("Context is not defined");
       let context = new Context(ctx, telegramAdaptor);
       await bot.messagehandler.handleEvent(context);
     });

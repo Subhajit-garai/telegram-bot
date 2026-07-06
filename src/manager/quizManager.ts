@@ -58,34 +58,44 @@ class QuizManager {
     await this.sendQuestion(chatid, quiz_id, thread_id);
   }
 
-  handle_poll_answer = async (update: TelegramUpdate) => {
-    console.log("collecting ans ....");
-
-    let answer = update?.poll_answer;
+  handle_poll_answer = async (answer: {
+    poll_id: string;
+    option_ids: number[];
+    user_id: number;
+    quiz_id: string;
+  }) => {
+    logger.info("collecting ans ....");
     let poll_id = answer.poll_id;
     let selected_option = answer.option_ids[0];
     let data = this.quizInfo.get(poll_id);
     if (!data) {
-      console.log("No quiz data found for poll ID:", poll_id);
+      logger.error("No quiz data found for poll ID:", poll_id);
       return;
     }
-    const userId = answer.user.id;
+    const userId = answer.user_id;
     const quizId = data.quiz_id;
     const correct_option_id = data.correct_option_id;
 
+    // get user data from user Manager
+
+    let User = {
+      first_name: "",
+      username: "",
+    };
+
     // Always get or create the userMap
     const userMap = this.userAnswers.get(quizId) || {};
-    const user = userMap[userId];
+    const userAnswerData = userMap[userId];
 
     // Check answer correctness
     if (correct_option_id === selected_option) {
-      if (user) {
-        user.score += 1;
-        user.attemp += 1;
+      if (userAnswerData) {
+        userAnswerData.score += 1;
+        userAnswerData.attemp += 1;
       } else {
         userMap[userId] = {
-          first_name: answer.user.first_name ?? "No name",
-          username: answer.user.username ?? "N/A",
+          first_name: User.first_name ?? "No name",
+          username: User.username ?? "N/A",
           score: 1,
           attemp: 1,
           notattemp: 0,
@@ -93,12 +103,12 @@ class QuizManager {
         };
       }
     } else {
-      if (user) {
-        user.wrong += 1;
+      if (userAnswerData) {
+        userAnswerData.wrong += 1;
       } else {
         userMap[userId] = {
-          first_name: answer.user.first_name,
-          username: answer.user.username ?? "N/A",
+          first_name: User.first_name,
+          username: User.username ?? "N/A",
           score: 0,
           attemp: 0,
           notattemp: 0,

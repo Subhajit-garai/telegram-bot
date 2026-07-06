@@ -4,12 +4,22 @@ import axios from "axios";
 import { logger } from "@/utils/logger.js";
 
 export class TelegramAdaptor extends IPlatformAdaptor {
-  token = process.env.BOT_TOKEN?.trim()!;
-  WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
-  apiUrl = `https://api.telegram.org/bot${this.token}`;
+  #token: string; //private infomation , it not log
+  #WEBHOOK_URL: string;
+  #apiUrl: string;
 
   constructor() {
     super();
+    this.#token = process.env.BOT_TOKEN?.trim()!;
+    this.#WEBHOOK_URL = `${process.env.WEBHOOK_URL?.trim()!}/webhook`;
+    this.#apiUrl = `https://api.telegram.org/bot${this.#token}`;
+
+    if (!this.#token || !this.#WEBHOOK_URL) {
+      throw new Error(
+        "Please provide BOT_TOKEN and WEBHOOK_URL in the environment variables",
+      );
+    }
+
     this.init();
   }
   getPlatformName(): string {
@@ -35,16 +45,16 @@ export class TelegramAdaptor extends IPlatformAdaptor {
   // copy from telegram bot lib
 
   async init() {
-    await this.setWebhook(this.WEBHOOK_URL);
+    await this.setWebhook(this.#WEBHOOK_URL);
   }
 
   getUrl(path: string): string {
-    return `${this.apiUrl}${path}`;
+    return `${this.#apiUrl}${path}`;
   }
 
   async isAdmin(chatId: string, userId: string): Promise<boolean> {
     try {
-      const url = `https://api.telegram.org/bot${this.token}/getChatAdministrators`;
+      const url = this.getUrl("/getChatAdministrators");
       const response = await axios.get(url, { params: { chat_id: chatId } });
 
       const admins = response.data.result;
@@ -120,7 +130,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
     chatId: string,
     thread_id: number | undefined = undefined,
   ) {
-    let url = `${this.apiUrl}/sendMessage`;
+    let url = this.getUrl("/sendMessage");
     let res = await axios.post(url, {
       chat_id: parseInt(chatId),
       ...(thread_id ? { message_thread_id: thread_id } : {}),
@@ -134,7 +144,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
     thread_id: number | undefined = undefined,
   ) {
     try {
-      let url = `${this.apiUrl}/sendMessage`;
+      let url = this.getUrl("/sendMessage");
       let res;
       res = await axios.post(url, {
         chat_id: parseInt(chatId),
@@ -231,10 +241,10 @@ export class TelegramAdaptor extends IPlatformAdaptor {
   // Set webhook for Telegram
   private async setWebhook(url: string) {
     try {
-      const res = await axios.get(`${this.apiUrl}/getWebhookInfo`);
+      const res = await axios.get(`${this.#apiUrl}/getWebhookInfo`);
       if (res.status !== 200) {
         console.error("Failed to get webhook info:", res);
-        console.error("requested url :", `${this.apiUrl}/getWebhookInfo`);
+        console.error("requested url :", `${this.#apiUrl}/getWebhookInfo`);
         return;
       }
       const data = res.data;
@@ -244,7 +254,7 @@ export class TelegramAdaptor extends IPlatformAdaptor {
         return;
       }
       console.log("Updating webhook to:", url);
-      const response = await axios.post(`${this.apiUrl}/setWebhook`, { url });
+      const response = await axios.post(`${this.#apiUrl}/setWebhook`, { url });
       console.log("Webhook set:", response.data);
     } catch (error: any) {
       console.error("Error setting webhook:", error.response?.data || error);

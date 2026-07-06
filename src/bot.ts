@@ -4,8 +4,11 @@ import { TelegramAdaptor } from "./adapter/telegram.js";
 import QuizManager from "./manager/quizManager.js";
 import { BotService } from "@/services/bot.service.js";
 
+type handlerType = "commad" | "message" | "error" | "quiz" | "question";
+
 export class TelegramBot extends IBot {
-  messagehandler = messageManager.getInstance();
+  messagehandler = new messageManager<handlerType>();
+
   platform: TelegramAdaptor;
   quizmanager: QuizManager;
   botservice: BotService;
@@ -15,6 +18,12 @@ export class TelegramBot extends IBot {
     if (!PlatformAdaptor) {
       throw new Error("Platform Adaptor is required");
     }
+
+    this.messagehandler.mapCommad("/", "commad");
+    this.messagehandler.mapCommad("?", "question");
+    this.messagehandler.mapCommad("!", "error");
+    this.messagehandler.mapCommad(" ", "message");
+
     this.platform = PlatformAdaptor;
     this.quizmanager = new QuizManager();
     this.botservice = new BotService();
