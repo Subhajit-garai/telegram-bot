@@ -101,7 +101,25 @@ export function initQueueWorker(
             }
             break;
 
+          case "HANDLE_POLL_ANSWER":
+            {
+              let { poll_id, options, userid, name, username } =
+                job.data.payload;
+
+              quiz.handle_poll_answer({
+                poll_id: poll_id,
+                option_ids: options,
+                user_id: userid,
+                quiz_id: poll_id,
+                user_name: name,
+                user_username: username,
+              });
+            }
+            break;
           case "SEND_QUIZ_DATA":
+            {
+            }
+            break;
           case "CREATE_QUIZ":
             {
               logger.info(`[Queue] Starting quiz setup`);

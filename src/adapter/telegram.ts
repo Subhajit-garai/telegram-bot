@@ -254,7 +254,10 @@ export class TelegramAdaptor extends IPlatformAdaptor {
         return;
       }
       console.log("Updating webhook to:", url);
-      const response = await axios.post(`${this.#apiUrl}/setWebhook`, { url });
+      const response = await axios.post(`${this.#apiUrl}/setWebhook`, {
+        url,
+        allowed_updates: ["message", "poll", "poll_answer", "callback_query"], // need to mantion all the required updates
+      });
       console.log("Webhook set:", response.data);
     } catch (error: any) {
       console.error("Error setting webhook:", error.response?.data || error);

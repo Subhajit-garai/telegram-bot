@@ -30,7 +30,6 @@ class QuizManager {
   async quiz(chatid: string) {
     let thread_id = null;
     let quiz_id = randomInt(0, 1000000).toString();
-
     await this.queue.push({
       id: `${quiz_id}_start_msg1`,
       type: "SEND_NOFTIFICATION" as any,
@@ -61,13 +60,16 @@ class QuizManager {
   handle_poll_answer = async (answer: {
     poll_id: string;
     option_ids: number[];
-    user_id: number;
+    user_id: string;
+    user_name: string;
+    user_username: string;
     quiz_id: string;
   }) => {
     logger.info("collecting ans ....");
     let poll_id = answer.poll_id;
     let selected_option = answer.option_ids[0];
     let data = this.quizInfo.get(poll_id);
+
     if (!data) {
       logger.error("No quiz data found for poll ID:", poll_id);
       return;
@@ -79,8 +81,8 @@ class QuizManager {
     // get user data from user Manager
 
     let User = {
-      first_name: "",
-      username: "",
+      name: answer.user_name,
+      username: answer.user_username,
     };
 
     // Always get or create the userMap
@@ -94,7 +96,7 @@ class QuizManager {
         userAnswerData.attemp += 1;
       } else {
         userMap[userId] = {
-          first_name: User.first_name ?? "No name",
+          name: User.name ?? "No name",
           username: User.username ?? "N/A",
           score: 1,
           attemp: 1,
@@ -105,12 +107,13 @@ class QuizManager {
     } else {
       if (userAnswerData) {
         userAnswerData.wrong += 1;
+        userAnswerData.attemp += 1;
       } else {
         userMap[userId] = {
-          first_name: User.first_name,
+          name: User.name,
           username: User.username ?? "N/A",
           score: 0,
-          attemp: 0,
+          attemp: 1,
           notattemp: 0,
           wrong: 1,
         };
@@ -120,7 +123,6 @@ class QuizManager {
     // Update the userMap in the main map
     this.userAnswers.set(quizId, userMap);
   };
-
   // in dev
   codeFormatter = async (code: string) => {
     let formatted: string = "";
@@ -141,15 +143,16 @@ class QuizManager {
     quiz_id: string,
     thread_id?: number | null,
   ) => {
-    let config;
+    let config: any = {
+      total_questions: 2,
+      nextQuestionTime: 30, // Default 30 seconds
+      quizOpenFor: 20, // Default 20 seconds
+    };
+
     try {
       config = await this.botService.telegram.getQuizConfig(chatid);
     } catch (e) {
-      config = {
-        total_questions: 10,
-        nextQuestionTime: 30, // Default 30 seconds
-        quizOpenFor: 20, // Default 20 seconds
-      };
+      logger.info("useing default config");
     }
 
     const nextQuestionTime = config.nextQuestionTime || 30;
@@ -247,23 +250,31 @@ class QuizManager {
     thread_id: number | undefined = undefined,
   ) {
     let all_user_data = this.userAnswers.get(quiz_id);
-    console.log("quiz id is (in showleaderboard) --->", quiz_id);
+    logger.success("quiz id is (in showleaderboard) --->", quiz_id);
 
     if (!all_user_data) {
-      console.log(
+      logger.error(
         "No quiz data found for quiz ID (in showleaderboard):",
         quiz_id,
       );
       return;
     }
+
+    logger.info("user data", all_user_data);
+
     let sorted_users = Object.values(all_user_data).sort(
       (a, b) => b.score - a.score,
     );
     let leaderboard_text = "🏆 Quiz Leaderboard 🏆\n\n";
     sorted_users.forEach((user, index) => {
+      let accuracy = "";
+      if (user.attemp + user.wrong > 0) {
+        accuracy =
+          ((user.score / (user.score + user.wrong)) * 100).toFixed(2) + "%";
+      }
       leaderboard_text += `${index + 1}. ${
-        user.first_name ? user.first_name : user.username
-      }  - Score: ${user.score}\n`;
+        user.name ? user.name : user.username
+      }  - Score: ${user.score}( ${accuracy} ) ,A- ${user.attemp} W-${user.wrong} \n`;
     });
 
     this.queue.push({

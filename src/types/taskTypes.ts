@@ -1,6 +1,4 @@
-import {
-  ExamType,
-} from "../db/schema/enums.js";
+import { ExamType } from "../db/schema/enums.js";
 
 export type ExamCategory = "JECA" | "GATE";
 
@@ -11,6 +9,7 @@ export type TaskType =
   | "CREATE_SCORE"
   | "ANS_PROCESSING"
   | "SEND_NOFTIFICATION"
+  | "HANDLE_POLL_ANSWER"
   | "SEND_QUIZ_DATA";
 
 export interface Task {
@@ -22,8 +21,13 @@ export interface Task {
   retries?: number;
 }
 
-
-export type JobType = "QUIZ_SETUP" | "QUIZ_PROCESSING" | "QUIZ_RESULT" | "QUIZ_ANALYSIS" | "QUIZ_NOTIFICATION" | "QUIZ_ERROR";
+export type JobType =
+  | "QUIZ_SETUP"
+  | "QUIZ_PROCESSING"
+  | "QUIZ_RESULT"
+  | "QUIZ_ANALYSIS"
+  | "QUIZ_NOTIFICATION"
+  | "QUIZ_ERROR";
 export interface Job {
   id: string;
   type: JobType;
@@ -32,4 +36,3 @@ export interface Job {
   variant?: ExamType;
   retries?: number;
 }
-

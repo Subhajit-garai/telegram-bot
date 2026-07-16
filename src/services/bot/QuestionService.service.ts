@@ -15,7 +15,7 @@ export class QuestionService {
         extra: questions.extra,
       })
       .from(questions)
-      .limit(10);
+      .limit(2);
     return question;
   }
 }

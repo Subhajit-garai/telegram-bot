@@ -9,12 +9,16 @@ export class QueueManager<Q extends string = string> {
   private queues: Map<string, Queue> = new Map();
   private allowedQueues: Q[] = [];
 
-  public static getInstance<T extends string = string>(allowedQueues?: T[]): QueueManager<T> {
+  public static getInstance<T extends string = string>(
+    allowedQueues?: T[],
+  ): QueueManager<T> {
     if (!this.instance) {
       this.instance = new QueueManager<T>(allowedQueues || (["task"] as T[]));
     } else if (allowedQueues) {
       // Update allowed queues if passed again
-      const newQueues = Array.from(new Set([...this.instance.allowedQueues, ...allowedQueues]));
+      const newQueues = Array.from(
+        new Set([...this.instance.allowedQueues, ...allowedQueues]),
+      );
       this.instance.allowedQueues = newQueues;
     }
     return this.instance as QueueManager<T>;
@@ -24,9 +28,28 @@ export class QueueManager<Q extends string = string> {
     this.allowedQueues = allowedQueues;
     this.redisClient = new Redis(process.env.REDIS_URL!, {
       maxRetriesPerRequest: null,
+
+      retryStrategy(times) {
+        console.log(`Redis reconnect attempt ${times}`);
+
+        // exponential backoff (max 5 sec)
+        return Math.min(times * 1000, 5000);
+      },
+
+      reconnectOnError(err) {
+        console.error("Redis Error:", err.message);
+
+        // reconnect on every error
+        return true;
+      },
+
+      enableReadyCheck: true,
+
+      lazyConnect: false,
     });
+
     this.redisClient.on("error", (err: Error) =>
-      logger.error("[Queue] Redis Client Error", err)
+      logger.error("[Queue] Redis Client Error", err),
     );
   }
 
@@ -42,7 +65,9 @@ export class QueueManager<Q extends string = string> {
    */
   public getQueue<T = any>(queueName: Q): Queue<T> {
     if (!this.allowedQueues.includes(queueName)) {
-      throw new Error(`[Queue] Access denied: Queue "${queueName}" is not in the allowed list.`);
+      throw new Error(
+        `[Queue] Access denied: Queue "${queueName}" is not in the allowed list.`,
+      );
     }
 
     if (!this.queues.has(queueName)) {
@@ -71,7 +96,7 @@ export class QueueManager<Q extends string = string> {
     queueName: Q,
     jobName: string,
     data: T,
-    options?: JobsOptions
+    options?: JobsOptions,
   ) {
     try {
       const queue = this.getQueue<T>(queueName);
@@ -98,7 +123,10 @@ export class QueueManager<Q extends string = string> {
       }
       return false;
     } catch (err) {
-      logger.error(`[Queue] Failed to delete job from queue ${queueName}:`, err);
+      logger.error(
+        `[Queue] Failed to delete job from queue ${queueName}:`,
+        err,
+      );
       throw err;
     }
   }

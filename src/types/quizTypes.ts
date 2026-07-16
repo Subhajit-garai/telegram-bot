@@ -22,14 +22,12 @@ export type quiz_info_type = {
 };
 
 export type quiz_user_answer_type = {
-  // [quiz_id:string]: {
-  [user_id: number]: {
-    first_name: string;
+  [user_id: string]: {
+    name: string;
     username?: string;
     score: number;
     attemp: number;
     notattemp: number;
     wrong: number;
   };
-  // },
 };

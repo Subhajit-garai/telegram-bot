@@ -1,16 +1,16 @@
-import { IBot } from "@subhajit60/bot";
-import messageManager from "@subhajit60/bot/dist/managers/messageManager.js";
+import { IBot, messageManager } from "@subhajit60/bot";
 import { TelegramAdaptor } from "./adapter/telegram.js";
 import QuizManager from "./manager/quizManager.js";
 import { BotService } from "@/services/bot.service.js";
+import { QueueManager } from "./queue/queueManager.js";
 
-type handlerType = "commad" | "message" | "error" | "quiz" | "question";
+type handlerType = "command" | "message" | "error" | "quiz" | "question";
 
 export class TelegramBot extends IBot {
   messagehandler = new messageManager<handlerType>();
-
   platform: TelegramAdaptor;
   quizmanager: QuizManager;
+  queue: QueueManager;
   botservice: BotService;
 
   constructor(PlatformAdaptor: TelegramAdaptor) {
@@ -19,14 +19,15 @@ export class TelegramBot extends IBot {
       throw new Error("Platform Adaptor is required");
     }
 
-    this.messagehandler.mapCommad("/", "commad");
-    this.messagehandler.mapCommad("?", "question");
-    this.messagehandler.mapCommad("!", "error");
-    this.messagehandler.mapCommad(" ", "message");
+    this.messagehandler.mapCommand("/", "command");
+    this.messagehandler.mapCommand("?", "question");
+    this.messagehandler.mapCommand("!", "error");
+    this.messagehandler.mapCommand(" ", "message");
 
     this.platform = PlatformAdaptor;
     this.quizmanager = new QuizManager();
     this.botservice = new BotService();
+    this.queue = QueueManager.getInstance();
   }
 
   start(): Promise<void> {
