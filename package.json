@@ -15,8 +15,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@subhajit60/bot": "file:P:/Modules/Bot",
-    "@subhajit60/aiagent": "file:P:/Modules/AiAgent",
+    "@subhajit60/aiagent": "^1.0.1",
+    "@subhajit60/bot": "^1.0.4",
     "@types/pg": "^8.20.0",
     "axios": "^1.8.4",
     "bullmq": "^5.76.2",
