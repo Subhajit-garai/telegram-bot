@@ -2,6 +2,7 @@ import { IPlatformAdaptor, NormalizedContext } from "@subhajit60/bot";
 // import TelegramBot from "../utils/Telegrambot.js";
 import axios from "axios";
 import { logger } from "@/utils/logger.js";
+import { BotService } from "@/services/bot.service.js";
 
 export class TelegramAdaptor extends IPlatformAdaptor {
   #token: string; //private infomation , it not log
@@ -50,6 +51,27 @@ export class TelegramAdaptor extends IPlatformAdaptor {
 
   getUrl(path: string): string {
     return `${this.#apiUrl}${path}`;
+  }
+
+  async isValidChat(chatId: string): Promise<boolean> {
+    try {
+      const BS = new BotService();
+      const validChatIds = await BS.telegram.getValidChatIds();
+      let flag: boolean = false;
+
+      // here we got chatId as a number
+      validChatIds.map((chat) => {
+        if (chat.id == chatId) {
+          flag = true;
+          return;
+        }
+      });
+
+      return flag;
+    } catch (error: any) {
+      logger.error("Error checking chat validity:", error);
+      return false;
+    }
   }
 
   async isAdmin(chatId: string, userId: string): Promise<boolean> {

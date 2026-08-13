@@ -149,6 +149,9 @@ class QuizManager {
       quizOpenFor: 20, // Default 20 seconds
     };
 
+    //  reciveing question here
+
+    // check is any quiz data in cache
     try {
       config = await this.botService.telegram.getQuizConfig(chatid);
     } catch (e) {
@@ -157,8 +160,10 @@ class QuizManager {
 
     const nextQuestionTime = config.nextQuestionTime || 30;
     const quizOpenFor = config.quizOpenFor || 20;
-
     const questions = await this.botService.question.getQuizQuestions();
+
+    // end quesion recive
+
     const total_questions = questions.length;
 
     for (let i = 0; i < questions.length; i++) {

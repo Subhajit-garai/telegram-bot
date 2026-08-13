@@ -1,5 +1,5 @@
 import { Middleware, Context } from "@subhajit60/bot";
-import { TelegramUpdate } from "../types/index.js";
+import { logger } from "@subhajit60/aiagent";
 
 export const isGroupValid: Middleware = async (
   ctx: Context,
@@ -10,10 +10,10 @@ export const isGroupValid: Middleware = async (
   let ChatType = ctx.update.raw?.chat?.type;
   let chatId = ctx.chatId;
   let isValidChat = false;
-
   switch (ChatType) {
     case "group":
       {
+        isValidChat = await ctx.platformInstance.isValidChat(chatId);
         if (isValidChat) {
           if (actualNext) await actualNext(); // Continue if valid group
         } else {
@@ -25,6 +25,9 @@ export const isGroupValid: Middleware = async (
       break;
     case "supergroup":
       {
+        isValidChat = await ctx.platformInstance.isValidChat(chatId);
+
+        logger.info("is super group is valid ?  ", isValidChat);
         if (isValidChat) {
           if (actualNext) await actualNext(); // Continue if valid group
         } else {
