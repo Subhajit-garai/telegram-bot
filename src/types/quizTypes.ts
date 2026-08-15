@@ -3,13 +3,14 @@ export type question_extra = {
 };
 export type quiz_question_type = {
   id: string;
-  topic: string;
   title: string;
-  format: string;
   options: string[];
-  explanation: string;
   ans: string[];
-  extra: question_extra;
+  explanation: string | null;
+  format: string;
+  map?: number[];
+  extra: any;
+  is_multiple_ans: boolean;
 };
 
 export type quiz_info_type = {
@@ -30,4 +31,10 @@ export type quiz_user_answer_type = {
     notattemp: number;
     wrong: number;
   };
+};
+
+export type exam_question_format_type = {
+  number: number;
+  part: string;
+  question: quiz_question_type;
 };

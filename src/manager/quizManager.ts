@@ -1,21 +1,28 @@
 import { TelegramUpdate } from "../types/index.js";
-import { quiz_info_type, quiz_user_answer_type } from "../types/quizTypes.js";
+import {
+  exam_question_format_type,
+  quiz_info_type,
+  quiz_user_answer_type,
+} from "../types/quizTypes.js";
 import { randomInt } from "crypto";
 import { QueueManager } from "../queue/queueManager.js";
 import { BotService } from "../services/bot.service.js";
 import { logger } from "@/utils/logger.js";
+import { quizCacheManager } from "@/utils/radisProvider.js";
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;
   public quizInfo: Map<string, quiz_info_type>;
   private queue: QueueManager;
   private botService: BotService;
+  private quizdb: quizCacheManager; // redis cache db
 
   constructor() {
     this.quizInfo = new Map();
     this.userAnswers = new Map();
     this.queue = QueueManager.getInstance();
     this.botService = new BotService();
+    this.quizdb = quizCacheManager.getInstance();
   }
 
   clearcache() {
@@ -29,7 +36,9 @@ class QuizManager {
 
   async quiz(chatid: string) {
     let thread_id = null;
-    let quiz_id = randomInt(0, 1000000).toString();
+
+    let quiz_id = ""; // pick one of quiz from redis cache
+
     await this.queue.push({
       id: `${quiz_id}_start_msg1`,
       type: "SEND_NOFTIFICATION" as any,
@@ -160,7 +169,11 @@ class QuizManager {
 
     const nextQuestionTime = config.nextQuestionTime || 30;
     const quizOpenFor = config.quizOpenFor || 20;
-    const questions = await this.botService.question.getQuizQuestions();
+    let key = "quiz:data:" + quiz_id;
+
+    // const questions = await this.botService.question.getQuizQuestions(); // collect from cache
+    const questions: exam_question_format_type[] =
+      await this.quizdb.getQuizQuestions(quiz_id); // collect from cache
 
     // end quesion recive
 
@@ -172,12 +185,12 @@ class QuizManager {
         title,
         options,
         ans,
-        explanation,
+        explanation, // this fields are not sended in live quiz .
         id,
         extra,
         format,
-        allows_multiple_answers,
-      } = question;
+        is_multiple_ans,
+      } = question?.question!;
       let ansid = ans ? parseInt(ans[0]) - 1 : 0;
       let question_time = 3000 + i * nextQuestionTime * 1000;
 
@@ -216,7 +229,7 @@ class QuizManager {
                     ? explanation.slice(0, 197) + "..."
                     : explanation
                   : "no explanation",
-                allows_multiple_answers: allows_multiple_answers || false,
+                is_multiple_ans: is_multiple_ans || false,
                 quizOpenFor,
                 thread_id: thread_id ?? undefined,
               },

@@ -3,6 +3,30 @@ import Redis from "ioredis";
 import { Job, Task } from "@repo/types/taskTypes.js";
 import { logger } from "./logger.js";
 
+export class redisClient {
+  private static instance: redisClient;
+  private Client: Redis;
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = new redisClient();
+    }
+    return this.instance;
+  }
+
+  getClient(): Redis {
+    return this.Client;
+  }
+
+  private constructor() {
+    this.Client = new Redis(process.env.REDIS_URL!);
+    this.Client.on("error", (err) => console.log("Redis Client Error", err));
+  }
+
+  async disconnect() {
+    await this.Client.quit();
+  }
+}
+
 export class QuizJobQueue {
   private static instance: QuizJobQueue;
   private redisClient: Redis;
@@ -16,17 +40,12 @@ export class QuizJobQueue {
   }
 
   private constructor() {
-
-    this.redisClient = new Redis(process.env.REDIS_URL!);
-    this.redisClient.on("error", (err) =>
-      console.log("Redis Client Error", err)
-    );
-
+    this.redisClient = redisClient.getInstance().getClient();
   }
 
-  getclient(): Redis {
-    return this.redisClient;
-  }
+  // getclient(): Redis {
+  //   return this.redisClient;
+  // }
 
   push(data: Job, delayMs: number) {
     if (!this.redisClient) logger.error(" redis not connected....");
@@ -37,18 +56,12 @@ export class QuizJobQueue {
 
   async pop(): Promise<Job | null> {
     let res = await this.redisClient.zrangebyscore(this.queue, 0, Date.now());
-    if (!res) return null
-    let rawdata = res[1]
+    if (!res) return null;
+    let rawdata = res[1];
     let data: Job = JSON.parse(rawdata as string);
     return data;
   }
-
-
-  async disconnect() {
-    await this.redisClient.quit();
-  }
 }
-
 
 export class TaskQueue {
   private static instance: TaskQueue;
@@ -63,16 +76,7 @@ export class TaskQueue {
   }
 
   private constructor() {
-
-    this.redisClient = new Redis(process.env.REDIS_URL!);
-    this.redisClient.on("error", (err) =>
-      console.log("Redis Client Error", err)
-    );
-
-  }
-
-  getclient(): Redis {
-    return this.redisClient;
+    this.redisClient = redisClient.getInstance().getClient();
   }
 
   push(data: Task) {
@@ -90,10 +94,42 @@ export class TaskQueue {
     }
     return null;
   }
-
-
-  async disconnect() {
-    await this.redisClient.quit();
-  }
 }
 
+export class quizCacheManager {
+  private static instance: quizCacheManager;
+  private Redis: Redis;
+  private basekey: string = "quiz"; // it is not a queue . it is cache    { quizmetadata , data}
+
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = new quizCacheManager();
+    }
+    return this.instance;
+  }
+
+  private constructor() {
+    this.Redis = redisClient.getInstance().getClient();
+  }
+
+  async getquizmeta(quizid: string) {
+    let key = `${this.basekey}:meta:${quizid}`;
+    let res = await this.Redis.get(key);
+    if (!res) return null;
+    return JSON.parse(res);
+  }
+
+  async getquizid() {
+    //here it pick a randon id form quiz . then this quiz's questions is use in quiz
+    let key = `${this.basekey}:meta:*`;
+    let res = await this.Redis.keys(key);
+    if (res.length === 0) return "";
+    let index = Math.floor(Math.random() * res.length);
+    let quizKey = res[index];
+    let quizId = quizKey.split(":").pop();
+    return quizId;
+  }
+  async getQuizQuestions(quizid: string) {
+    return [];
+  }
+}
