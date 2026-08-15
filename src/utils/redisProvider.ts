@@ -2,6 +2,7 @@ import Redis from "ioredis";
 
 import { Job, Task } from "@repo/types/taskTypes.js";
 import { logger } from "./logger.js";
+import { exam_question_format_type } from "@/types/quizTypes.js";
 
 export class redisClient {
   private static instance: redisClient;
@@ -119,17 +120,43 @@ export class quizCacheManager {
     return JSON.parse(res);
   }
 
-  async getquizid() {
+  async getquizid(): Promise<string | undefined> {
     //here it pick a randon id form quiz . then this quiz's questions is use in quiz
     let key = `${this.basekey}:meta:*`;
     let res = await this.Redis.keys(key);
-    if (res.length === 0) return "";
+    if (res.length === 0) return undefined;
     let index = Math.floor(Math.random() * res.length);
     let quizKey = res[index];
     let quizId = quizKey.split(":").pop();
     return quizId;
   }
-  async getQuizQuestions(quizid: string) {
-    return [];
+  async getQuizQuestions(
+    quizid: string,
+  ): Promise<exam_question_format_type[] | null> {
+    // 1. Find the actual key in Redis using pattern match (since Redis GET does not evaluate wildcards like '*')
+    let keys = await this.Redis.keys(`quiz:questions:${quizid}:part1:*`);
+    if (keys.length === 0) {
+      logger.error("redis : no questions key found for quiz id ", quizid);
+      let meta = await this.getquizmeta(quizid);
+      if (!meta) {
+        logger.error("redis : no meta found for quiz id ", quizid);
+      }
+      return null;
+    }
+
+    // logger.info("[check] resolved exact key : ", keys);
+    let questions = await this.Redis.mget(keys);
+
+    if (!questions) {
+      return null;
+    }
+
+    let formated_questions = questions.map((q) => {
+      return JSON.parse(q as string);
+    });
+
+    // logger.info("[check] questions loaded: ", formated_questions);
+
+    return formated_questions;
   }
 }

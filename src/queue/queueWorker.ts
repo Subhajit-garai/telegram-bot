@@ -12,7 +12,7 @@ export function initQueueWorker(
   const connection = queueManager.getclient();
 
   const worker = new Worker(
-    "task",
+    "Ttask",
     async (job) => {
       logger.info(`[Queue] Processing job ${job.id} of type ${job.name}`);
       try {

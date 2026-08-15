@@ -8,7 +8,7 @@ import { randomInt } from "crypto";
 import { QueueManager } from "../queue/queueManager.js";
 import { BotService } from "../services/bot.service.js";
 import { logger } from "@/utils/logger.js";
-import { quizCacheManager } from "@/utils/radisProvider.js";
+import { quizCacheManager } from "@/utils/redisProvider.js";
 
 class QuizManager {
   private userAnswers: Map<string, quiz_user_answer_type>;
@@ -37,7 +37,13 @@ class QuizManager {
   async quiz(chatid: string) {
     let thread_id = null;
 
-    let quiz_id = ""; // pick one of quiz from redis cache
+    let quiz_id = await this.quizdb.getquizid(); // pick one of quiz from redis cache
+
+    if (!quiz_id) {
+      logger.error("no quiz data  found");
+      // message to admin
+      return;
+    }
 
     await this.queue.push({
       id: `${quiz_id}_start_msg1`,
@@ -169,15 +175,17 @@ class QuizManager {
 
     const nextQuestionTime = config.nextQuestionTime || 30;
     const quizOpenFor = config.quizOpenFor || 20;
-    let key = "quiz:data:" + quiz_id;
 
     // const questions = await this.botService.question.getQuizQuestions(); // collect from cache
-    const questions: exam_question_format_type[] =
+    const questions: exam_question_format_type[] | null =
       await this.quizdb.getQuizQuestions(quiz_id); // collect from cache
 
     // end quesion recive
 
+    if (!questions) return;
     const total_questions = questions.length;
+
+    logger.info("total questions", total_questions);
 
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];

@@ -13,7 +13,7 @@ export class QueueManager<Q extends string = string> {
     allowedQueues?: T[],
   ): QueueManager<T> {
     if (!this.instance) {
-      this.instance = new QueueManager<T>(allowedQueues || (["task"] as T[]));
+      this.instance = new QueueManager<T>(allowedQueues || (["Ttask"] as T[]));
     } else if (allowedQueues) {
       // Update allowed queues if passed again
       const newQueues = Array.from(
@@ -136,7 +136,7 @@ export class QueueManager<Q extends string = string> {
    * Pushes to the default "task" queue
    */
   async push(data: Task, options?: JobsOptions) {
-    return this.addJob("task" as Q, data.type, data, options);
+    return this.addJob("Ttask" as Q, data.type, data, options);
   }
 
   /**

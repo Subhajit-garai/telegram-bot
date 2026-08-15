@@ -62,9 +62,11 @@ bot.messagehandler.on("/quiz", isGroupValid, async (ctx) => {
   logger.success("starting new quiz ...");
   await bot.quizmanager.quiz(ctx.chatId);
 });
-bot.messagehandler.on("/poll_answer", async (ctx) => {
-  logger.success("poll answer received ");
+bot.messagehandler.on("/poll", isGroupValid, async (ctx) => {
+  logger.success("poll reciver  ...");
+});
 
+bot.messagehandler.on("/poll_answer", async (ctx) => {
   bot.queue.push({
     id: ctx.chatId,
     type: "HANDLE_POLL_ANSWER",
@@ -98,7 +100,7 @@ bot
           role: update?.message?.role || "User",
           command: "/poll_answer",
           args: [],
-          text: "on text",
+          text: "no text",
           type: "command",
           payload: {
             poll_id: update.poll_answer?.poll_id,
@@ -126,7 +128,6 @@ bot
         };
       } else if (update.message) {
         // const session = this.Conversation.userSessions.get(userId)!; // getting session info
-
         const { command, args, messageType } =
           bot.messagehandler.messageExtractor(update?.message?.text);
         ctx = {
@@ -140,12 +141,33 @@ bot
           type: messageType,
           raw: update.message,
         };
+      } else if (update.poll) {
+        // logger.info("recived poll data");
+        ctx = {
+          platform: telegramAdaptor.getPlatformName(),
+          userId: update?.message?.from?.id,
+          chatId: update?.message?.chat?.id,
+          role: update?.message?.role || "User",
+          command: "/poll",
+          args: [],
+          text: "no tex",
+          type: "command",
+          raw: update?.message,
+        };
       }
       // else if (update?.chat_join_request) {
       //   // AproveUserTojoin(update);
       // }
 
-      if (!ctx) throw Error("Context is not defined");
+      if (!ctx) {
+        logger.info(
+          "[Webhook] Received unhandled Telegram update type:",
+          Object.keys(update),
+        );
+
+        logger.info("full info of new / unhandled update", update);
+        return;
+      }
       let context = new Context(ctx, telegramAdaptor);
 
       await bot.messagehandler.handleEvent(context);
