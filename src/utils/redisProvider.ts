@@ -2,8 +2,7 @@ import Redis from "ioredis";
 
 import { Job, Task } from "@repo/types/taskTypes.js";
 import { logger } from "./logger.js";
-import { exam_question_format_type } from "@/types/quizTypes.js";
-
+import { exam_question_format_type, quiz_status } from "@/types/quizTypes.js";
 export class redisClient {
   private static instance: redisClient;
   private Client: Redis;
@@ -122,7 +121,10 @@ export class quizCacheManager {
 
   async getquizid(): Promise<string | undefined> {
     //here it pick a randon id form quiz . then this quiz's questions is use in quiz
-    let key = `${this.basekey}:meta:*`;
+    // which is done and not running , and not completed yet
+
+    // quiz >  meta have multiple section for status like 1. created ,2.done 3.running , 4.completed
+    let key = `${this.basekey}:meta:done*`;
     let res = await this.Redis.keys(key);
     if (res.length === 0) return undefined;
     let index = Math.floor(Math.random() * res.length);
@@ -130,6 +132,7 @@ export class quizCacheManager {
     let quizId = quizKey.split(":").pop();
     return quizId;
   }
+
   async getQuizQuestions(
     quizid: string,
   ): Promise<exam_question_format_type[] | null> {
@@ -158,5 +161,50 @@ export class quizCacheManager {
     // logger.info("[check] questions loaded: ", formated_questions);
 
     return formated_questions;
+  }
+
+  async updateStatus(quizid: string, status: quiz_status) {
+    // created ->  done( quiz questions are selected ) -> running -> completed ( now we can remove questions from cache)
+
+    switch (status) {
+      case "running":
+        {
+          let key = `${this.basekey}:meta:done:${quizid}`;
+          let res = await this.Redis.get(key);
+          if (!res) throw Error("quiz not found id Is : " + quizid);
+          let data = JSON.parse(res);
+          if ((data.status as quiz_status) === "done") {
+            await this.Redis.del(key);
+            let newkey = `${this.basekey}:meta:running:${quizid}`;
+            await this.Redis.set(newkey, JSON.stringify(data));
+          } else {
+            throw Error("quiz status is invalid format");
+          }
+
+          return true;
+        }
+        break;
+      case "completed":
+        {
+          let key = `${this.basekey}:meta:running:${quizid}`;
+          let res = await this.Redis.get(key);
+          if (!res) throw Error(`quiz not found id Is : ${quizid} `);
+          let data = JSON.parse(res);
+          if ((data.status as quiz_status) === "running") {
+            await this.Redis.del(key);
+            let newkey = `${this.basekey}:meta:completed:${quizid}`;
+            await this.Redis.set(newkey, JSON.stringify(data));
+          } else {
+            throw Error("quiz status is invalid format");
+          }
+
+          return true;
+        }
+        break;
+      default:
+        logger.error("invald status value");
+        break;
+    }
+    return false;
   }
 }

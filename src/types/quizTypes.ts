@@ -38,3 +38,5 @@ export type exam_question_format_type = {
   part: string;
   question: quiz_question_type;
 };
+
+export type quiz_status = "created" | "done" | "running" | "completed";

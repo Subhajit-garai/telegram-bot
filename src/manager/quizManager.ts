@@ -263,6 +263,10 @@ class QuizManager {
       },
       { delay: Leaderboard_time },
     );
+
+    const status = await this.quizdb.updateStatus(quiz_id, "completed");
+    if (!status) logger.error("unable to update status");
+    // created ->  done( quiz questions are selected ) -> running -> completed ( now we can remove questions from cache)
   };
 
   registerPollInfo(pollId: string, info: quiz_info_type) {
