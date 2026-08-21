@@ -69,6 +69,7 @@ class QuizManager {
     );
 
     // Send questions starting 3 seconds later
+    await this.quizdb.updateStatus(quiz_id, "running");
     await this.sendQuestion(chatid, quiz_id, thread_id);
   }
 
